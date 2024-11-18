@@ -1,6 +1,6 @@
 consultar FAQs servicios AWS
 
-Continuar pregunta 30
+Continuar pregunta 40
 
 Servicios AWS
     - AWS SAR (Serverless Application Repository)
@@ -9,7 +9,8 @@ Servicios AWS
     - AWS SAM (Serverless Application Model)
         Permite gestionar los recursos con CloudFormation y en la implementación serán desplegados. Usa plantillas SAM. Infrastructura para nuestra aplicación.
     
-    - AWS Marketplace. Tienda online de software
+    - AWS Marketplace
+        Tienda online de software
     
     - AWS AppSync. 
         Creación de API con GraphQL y varias fuentes de datos como bases de datos, microservicios u otras apis(Tiempo real)
@@ -23,9 +24,11 @@ Servicios AWS
         Para acceder a recursos desde otro dominio es necesario configurar CORS. Para fichero mayores de 100 MB se recomienda usar carga multiparte. También existe S3 Transfer Acceleration que se apoya en CloudFront y EdgeLocations para enviar el tráfico a S3.
         
     - AWS ECS
+        Configuración de propiedades del Cluster mediante el fichero /etc/ecs/ecs.config, sobre todo si queremos registrar un cluster con un nombre diferencia al ya existente.
     
     - AWS VPC
         Permiten la creación de endpoints para conectar VPC privadas a servicios. Uso de AWS PrivateLink. Existen dos tipos de endpoints, de interfaz y de Gateway. De interfaz es una ENI (Elastic Network Interface) que teine una dirección IP privada dentro del rango de la subred y se usa como entrada. De Gateway es un gateway a los servicios S3, DynamoDb.
+        Para dar acceso a internet, es necesario que una subred pública disponga de Gateway NAT o instancia NAT.
     
     - AWS DynamoDB
         No soporta los endpoints de interfaz de VPC.
@@ -35,12 +38,14 @@ Servicios AWS
         Existen varios tipos de integraciones, MOCK (respuesta preconfigurada), AWS_PROXY (para comunicar directamente el cliente y la function Lambda), HTTP_PROXY (Permite acceder directamente a los endpoints HTTP de un backend), HTTP (integración básica con un backend), AWS (expone servicios de AWS)
         Permite crear API de Websocket.
         Existen varios tipos de API que podemos crear, WebSocket (comunicación bidireaccional), REST (se compone de recursos y métodos, rútas con una jerarquía), HTTP (permite crear API RESTful con menor latencia y menos coste que REST)
+        Se debe de elegir en que etapa desplegar. Podemos elegir una etapa a la que atacar usando la varialble de etapa.
         
     - AWS CloudWatch
         - AWS CloudWatch Logs Insights. Permite buscar y analizar logs en CloudWatch Logs.
         Permite la ingesta de métricas personalizadas. Cada métrica puede ser de Resolución estandar (granularidad de un minuto) o de Alta resolución (granularidad de un segundo). Los servicios de AWS usan la estandar por defecto.
         Las de alta resolución se pueden leer y recuperar cada 1, 5, 10, 30 segundos o en múltiplos de 60 segundos. La creación de un métrica personalizada se ahce con el método del API PutMetricData. Las alarmas se puede crear por métrica o compuestas.
         Existen dos tipos de monitorización, básica (publicación cada 5 minutos) y detallada (publicación cada minuto).
+        Permite integración con S3, entre otros servicios.
     
     - AWS SSM Parameter Store (Systems Manager Parameter Store)
         Utiliza AWS KMS para los secure strings. 
@@ -52,9 +57,12 @@ Servicios AWS
     - AWS CodeDeploy
         Permite varias formas de desplegar. In situ (detiene, actualiza e inicia aplicación de cada instancia del grupo de despliegue, permite configurar el ELB para desconectar instancias). Blue/Green (despliegue usando un nuevo AutoScaling Group).
         Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
+
+    - AWS CodeBuild
+        Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
     
     - AWS CloudFront
-        Servir contenido estático y dinámico con varios orígenes (como S3). Usa Edge Locations para acercar el contenido.
+        Servir contenido estático y dinámico con varios orígenes (como S3). Usa Edge Locations para acercar el contenido. Permite configuración HTTPs entre el cliente y CloudFront y entre este y el backend (origen personalizado).
     
     - AWS Lambda
         Lambda@Edge es para acercar la computación al usuario, más proceso que servir datos. Para aumentar la capacidad de procesamiento, se incrementa la RAM.
@@ -102,6 +110,12 @@ Servicios AWS
     - AWS KMS
         Servicio para administrar claves de cifrado. Combina hardware y software seguro y de alta disponibilidad.
         SSL no cifra en reposo, cifra en tránsito.
+        - SSE-C Cifrado del lado del servidor. Claves proporcionadas por el cliente.
+        - SSE-S3. Cifrado del lado del servidor. Claves administradas por Amazon con rotación automática. Usa AES256
+        - CMKs. Clave del cliente administradas en KMS
+
+    - AWS EventBridge
+        Servicio basado en eventos que permite integración con socios SaaS de terceros.
         
     - AWS SNS (Simple Notification Service)
         Permite filtrar y distribuir mensajes a un gran número de SUSCRIPTORES (Lambda, Queue y sistemas distribuidos) También permite enviar push notifications a móviles, SMS y Correos.
@@ -115,3 +129,6 @@ Servicios AWS
         
     - AWS Kinesis
         - Kinesis Data Streams. Recopila y procesa stremas de registros en tiempo real y los almacena desde 24 horas hasta 1 año.
+
+    - AWS Glue
+        Servición de extracción, transformación y carga ETL administrador por AWS para preparar y cargar datos para analisis.
