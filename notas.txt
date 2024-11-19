@@ -3,39 +3,6 @@ consultar FAQs servicios AWS
 Continuar pregunta 40
 
 Servicios AWS
-    - AWS SAR (Serverless Application Repository)
-        Repositorio de aplicaciones sin servidor reutilizables. Configuración por variables. Aplicación solo.
-    
-    - AWS SAM (Serverless Application Model)
-        Permite gestionar los recursos con CloudFormation y en la implementación serán desplegados. Usa plantillas SAM. Infrastructura para nuestra aplicación. Las plantillas extienden de plantillas de CloudFormation.
-    
-    - AWS Marketplace
-        Tienda online de software
-    
-    - AWS AppSync. 
-        Creación de API con GraphQL y varias fuentes de datos como bases de datos, microservicios u otras apis(Tiempo real)
-    
-    - AWS Service Catalog
-        Permite a las organizaciones crear y administrar catálogos de servicios IT para luego usar en AWS.
-    
-    - NACL: NACLs are stateless, which means that information about previously sent or received traffic is not saved. If, for example, you create a NACL rule to allow specific inbound traffic to a subnet, responses to that traffic are not automatically allowed. 
-    
-    - AWS S3:
-        Para acceder a recursos desde otro dominio es necesario configurar CORS. Para fichero mayores de 100 MB se recomienda usar carga multiparte. También existe S3 Transfer Acceleration que se apoya en CloudFront y EdgeLocations para enviar el tráfico a S3.
-        Los roles IAM y las políticas basadas en recursos delegan el acceso entre cuentas sólo dentro de una única partición. (región nort-us, partación aws y región china-1 pero partición aws-cn)
-        
-    - AWS ECS
-        Configuración de propiedades del Cluster mediante el fichero /etc/ecs/ecs.config, sobre todo si queremos registrar un cluster con un nombre diferencia al ya existente.
-        Es un servicio de administración de contenedores docker en un Cluster. Permite lanzar las instancias usando EC2 o Fargate que administrará los recursos necesarios.
-        Si se finalizar una instancia de contenedor en estado STOPPED se produce un problema de sincronización y puede seguir apareciendo listada. Para darla de baja correctamente, será necesario hacerlo por la consola de ECS o por linea de comandos.
-    
-    - AWS VPC
-        Permiten la creación de endpoints para conectar VPC privadas a servicios. Uso de AWS PrivateLink. Existen dos tipos de endpoints, de interfaz y de Gateway. De interfaz es una ENI (Elastic Network Interface) que teine una dirección IP privada dentro del rango de la subred y se usa como entrada. De Gateway es un gateway a los servicios S3, DynamoDb.
-        Para dar acceso a internet, es necesario que una subred pública disponga de Gateway NAT o instancia NAT.
-    
-    - AWS DynamoDB
-        No soporta los endpoints de interfaz de VPC.
-        
     - AWS API Gateway
         Construido con endpoints de API. Permite la configuración de CORS para limitar quien puede acceder a los recursos. Permite estrangulación de peticiones, por defecto 10.000 por segundo. No usa grupos de seguridad, usa política para ver que recursos pueden invocarla (por norma general, usuarios).
         Existen varios tipos de integraciones, MOCK (respuesta preconfigurada), AWS_PROXY (para comunicar directamente el cliente y la function Lambda), HTTP_PROXY (Permite acceder directamente a los endpoints HTTP de un backend), HTTP (integración básica con un backend), AWS (expone servicios de AWS)
@@ -43,76 +10,18 @@ Servicios AWS
         Existen varios tipos de API que podemos crear, WebSocket (comunicación bidireaccional), REST (se compone de recursos y métodos, rútas con una jerarquía), HTTP (permite crear API RESTful con menor latencia y menos coste que REST)
         Se debe de elegir en que etapa desplegar. Podemos elegir una etapa a la que atacar usando la varialble de etapa.
         
-    - AWS CloudWatch
-        - AWS CloudWatch Logs Insights. Permite buscar y analizar logs en CloudWatch Logs.
-        Permite la ingesta de métricas personalizadas. Cada métrica puede ser de Resolución estandar (granularidad de un minuto) o de Alta resolución (granularidad de un segundo). Los servicios de AWS usan la estandar por defecto.
-        Las de alta resolución se pueden leer y recuperar cada 1, 5, 10, 30 segundos o en múltiplos de 60 segundos. La creación de un métrica personalizada se ahce con el método del API PutMetricData. Las alarmas se puede crear por métrica o compuestas.
-        Existen dos tipos de monitorización, básica (publicación cada 5 minutos) y detallada (publicación cada minuto).
-        Permite integración con S3, entre otros servicios.
-    
-    - AWS SSM Parameter Store (Systems Manager Parameter Store)
-        Utiliza AWS KMS para los secure strings. 
-        Almacena pares de clave valor para usar en las aplicaciones de AWS.
-        
-    - AWS CloudTrail
-        Auditoría del uso de los servicios. Proporciona un historia de eventos de la cuenta de AWS. Permite ver las llamadas que se realicen a SSM y KMS.
-    
-    - AWS CodeDeploy
-        Permite varias formas de desplegar. In situ (detiene, actualiza e inicia aplicación de cada instancia del grupo de despliegue, permite configurar el ELB para desconectar instancias). Blue/Green (despliegue usando un nuevo AutoScaling Group).
-        Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
+    - AWS AppSync. 
+        Creación de API con GraphQL y varias fuentes de datos como bases de datos, microservicios u otras apis(Tiempo real)
 
-    - AWS CodeBuild
-        Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
-
-    - AWS CodeCommit
-        Permite acceder a repositorios externos usando credenciales GIT dentro de CodeCommit, por ejemplo clonar un repositorio externo usando HTTPs.
-        Los token de acceso personal son específicos para usar junto con el API de GitHub o la linea de comandos, no sirven para AWS CodeCommit.
-    
-    - AWS CloudFront
-        Servir contenido estático y dinámico con varios orígenes (como S3). Usa Edge Locations para acercar el contenido. Permite configuración HTTPs entre el cliente y CloudFront y entre este y el backend (origen personalizado).
-        Las URLs firmadas usan una clave privada para firmar y la pública para verificar.
-        Como root, solo se pueden tener hasta dos pares de claves de CloudFront por cuenta AWS y solo se pueden crear con la cuenta root.
-        Permite el cifrado a nivel de campo (formulario HTTPs)
-
-    - AWS WAF (Web Application Firewall)
-        Es un firewall de aplicaciones web que permite monitorizar las peticiones HTTP y HTTPs que se reenvían a CloudFront.
-    
-    - AWS Lambda
-        Lambda@Edge es para acercar la computación al usuario, más proceso que servir datos. Para aumentar la capacidad de procesamiento, se incrementa la RAM.
-        Existe la concurrencia reservada y provisionada. La reservada indica el número máximo de instancias que se ejecutan de una función. La provisionada tiene siempre lista N instancias para responder a las necesidades de carga.
-        Permite el uso de alias que apuntan a versiones desplegadas. Se puede dirigir un porcentaje de tráfico a un alias que trabaje con una versión concreta (alias ponderados).
-        Un alias no puede apuntar a otro.
-        
-    - AWS Global Accelerator
-        Mejora el tráfico de red usando IP públicas. Usado principalmente para comunicación de red, UDP, MQTT o VoIP
-        
-    - AWS EFS
-        Almacenamiento compartido entre máquinas EC2. Con Standard-IA (infrecuent access) se gestionan los ficheros con pocos accesos y se ahorra. Se diferencia de S3 en que S3 almacena objetos y EFS almacenamiento de archivos.
-        El almacenamiento Standard es para archivos que se acceden con frecuencia. La capacidad de almacenamiento es elástica. Se soportan para tareas alojadas en AWS Fargate, ECS o EC2. Para ECS es necesario configurar la AMI para que monte el sistema de archivos antes de iniciar el daemon de Docker.
-        Los montajes Bind son para almacenamiento temporal.
-        
-    - AWS EBS
-        Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
-        Soporta cifrado en vuelo y en reposo usando KMS.
-        
-    - AWS Step Functions.
-        Una unidad de trabajo es un Task realizado en una máquina de estados que es en lo que se basa este servicio. Para tareas de tipo Task, resource es obligatorio. Tipo Pass es para no hacer nada. Tipo Fail para redirigir errores. Para fallar controladamente se puede definir un catch.
-        Existen distinto estados del flujo, Task (indicar Resource), Choice (para condionales, indicar mínimo una), Parallel para proceso en paralelo (división por ramas, obligatorio Branches), Map para ejecutar un conjunto de steps para cada elemento del map de forma paralela. Pass para transformar información, el input es el output (útil para debug), Wait detiene la ejecución el tiempo indicado, ya sea relativo a ahora o una fecha en concreto.
-        Succeed para terminar una ejecución de forma correcta. Fail termina la ejecución como fallida a no ser que usemos un Catch para el error.
-        
-    - AWS EC2
-        DeleteOnTermination, controla si un volumen EBS se eliminará al terminar un instancia EC2. Para cambiar su estado si la instacia está en ejecución, se debe de usar la linea de comandos.
-        DisableApiTermination permite controlar si se permite el terminar una instacia EC2 o no. 
-        Si recibimos un timeout, problablemente haya un error con los grupos de seguridad.
-        El script de inicio con datos del usuario solo se ejecuta cuando una instancia se lanza por primera vez (se puede cambiar). Este script se ejectura con permisos de root (de ahí que haya que cambiar los permisos de ejecución luego de lo que creemos)
-        ASG solo escalará al máximo configurado.
-        
+    - AWS Certificate Manager (ACM)
+        Herramientra prefereida para aprovisionar, administrar e implementar certificados de servidor. Gratuitos y con renovación automática.
+            
     - AWS CDK (Cloud Development Kit)
         Despliegue de infra por código. Usa plantillas proporcionadas por el CDK. El crear la aplicación es opcional. Genera un stack y luego lo implementamos con nuestra cuenta.
         Cada aplicación debe de estar en su directorio y si tiene dependencias, incluirlas. Con cdk init inicializamos la app usando una plantilla y el lenguaje de programación.
         Al sintetizar el código, generamos una plantilla de CloudFormation. Con cdk deploy implementamos la plantilla que hemos generado de CloudFormation.
         Permite usar CONSTRUCTORS, que son partes de infrastructura predefinida por AWS con valores por defecto.
-        
+       
     - AWS CloudFormation
         Infrastructura como código. Permite definir Conditions que luego se usarán como condicionales para crear un recurso o no, no se puede asociar con Parameters, estos luegos se evaluarán usando Coditions.
         Existen varias secciones, Resources, Conditions, Outputs (para referenciar en otros stacks), Parameters
@@ -120,14 +29,93 @@ Servicios AWS
         Exista la función Drift Detection que permite detectar si la configruación de un stack difiera de la esperada (cambios manuales en los recursos sin registrar en la plantilla).
         Change Sets permite revisar que cambios se van a aplicar en un entorno administrado con CloudFormation.
         
+    - AWS CloudTrail
+        Auditoría del uso de los servicios. Proporciona un historia de eventos de la cuenta de AWS. Permite ver las llamadas que se realicen a SSM y KMS.
+        No se puede usar para depurar y rastrear datos entre cuentas.
+    
+    - AWS CloudWatch
+        - AWS CloudWatch Logs Insights. Permite buscar y analizar logs en CloudWatch Logs.
+        - AWS CloudWatch Events. Ofrece un stream casi en tiempo real de eventos del sistema. Para notificaciones.
+        Permite la ingesta de métricas personalizadas. Cada métrica puede ser de Resolución estandar (granularidad de un minuto) o de Alta resolución (granularidad de un segundo). Los servicios de AWS usan la estandar por defecto.
+        Las de alta resolución se pueden leer y recuperar cada 1, 5, 10, 30 segundos o en múltiplos de 60 segundos. La creación de un métrica personalizada se ahce con el método del API PutMetricData. Las alarmas se puede crear por métrica o compuestas.
+        Existen dos tipos de monitorización, básica (publicación cada 5 minutos) y detallada (publicación cada minuto).
+        Permite integración con S3, entre otros servicios.
+        
+    - AWS CodeBuild
+        Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
+
+    - AWS CodeCommit
+        Permite acceder a repositorios externos usando credenciales GIT dentro de CodeCommit, por ejemplo clonar un repositorio externo usando HTTPs.
+        Los token de acceso personal son específicos para usar junto con el API de GitHub o la linea de comandos, no sirven para AWS CodeCommit.
+    
+    - AWS CodeDeploy
+        Permite varias formas de desplegar. In situ (detiene, actualiza e inicia aplicación de cada instancia del grupo de despliegue, permite configurar el ELB para desconectar instancias). Blue/Green (despliegue usando un nuevo AutoScaling Group).
+        Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
+
+    - AWS CloudFront
+        Servir contenido estático y dinámico con varios orígenes (como S3). Usa Edge Locations para acercar el contenido. Permite configuración HTTPs entre el cliente y CloudFront y entre este y el backend (origen personalizado).
+        Las URLs firmadas usan una clave privada para firmar y la pública para verificar.
+        Como root, solo se pueden tener hasta dos pares de claves de CloudFront por cuenta AWS y solo se pueden crear con la cuenta root.
+        Permite el cifrado a nivel de campo (formulario HTTPs)
+    
+    - AWS DynamoDB
+        No soporta los endpoints de interfaz de VPC.
+        
+    - AWS EBS
+        Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
+        Soporta cifrado en vuelo y en reposo usando KMS.
+        
+    - AWS ECS
+        Configuración de propiedades del Cluster mediante el fichero /etc/ecs/ecs.config, sobre todo si queremos registrar un cluster con un nombre diferencia al ya existente.
+        Es un servicio de administración de contenedores docker en un Cluster. Permite lanzar las instancias usando EC2 o Fargate que administrará los recursos necesarios.
+        Si se finalizar una instancia de contenedor en estado STOPPED se produce un problema de sincronización y puede seguir apareciendo listada. Para darla de baja correctamente, será necesario hacerlo por la consola de ECS o por linea de comandos.
+    
+    - AWS EC2
+        DeleteOnTermination, controla si un volumen EBS se eliminará al terminar un instancia EC2. Para cambiar su estado si la instacia está en ejecución, se debe de usar la linea de comandos.
+        DisableApiTermination permite controlar si se permite el terminar una instacia EC2 o no. 
+        Si recibimos un timeout, problablemente haya un error con los grupos de seguridad.
+        El script de inicio con datos del usuario solo se ejecuta cuando una instancia se lanza por primera vez (se puede cambiar). Este script se ejectura con permisos de root (de ahí que haya que cambiar los permisos de ejecución luego de lo que creemos)
+        ASG solo escalará al máximo configurado.
+        - NACL: NACLs are stateless, which means that information about previously sent or received traffic is not saved. If, for example, you create a NACL rule to allow specific inbound traffic to a subnet, responses to that traffic are not automatically allowed. 
+    
+    - AWS EFS
+        Almacenamiento compartido entre máquinas EC2. Con Standard-IA (infrecuent access) se gestionan los ficheros con pocos accesos y se ahorra. Se diferencia de S3 en que S3 almacena objetos y EFS almacenamiento de archivos.
+        El almacenamiento Standard es para archivos que se acceden con frecuencia. La capacidad de almacenamiento es elástica. Se soportan para tareas alojadas en AWS Fargate, ECS o EC2. Para ECS es necesario configurar la AMI para que monte el sistema de archivos antes de iniciar el daemon de Docker.
+        Los montajes Bind son para almacenamiento temporal.
+
+    - AWS Elastic Beanstalk
+        Es un servicio para implementar y escalar aplicacións y servicios web desarrollados con Java, .NET, Node, Python, Ruby, Go y Docker. Usa CloudFormation para provisionar los recursos. Si un despliegue falla, las instancias con errores se reemplazarán por otras sanas con la versión correcta anterior.
+        Existe el drenaje de conexiones antes de comenzar un despliegue.
+        Permite la creación de varios entornos, accediendo a distintas versiones.
+        Los saldos de ráfagas de EC2 se pierden cuando se sustituyen las instancias antiguas con nuevas de golpe.
+        - Desplieges
+            - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado.
+            - División de tráfico: Lanza un conjunto completo de neuvas instancias y luego envía un procentaje de peticiones durante un periodo para evaluar.
+            - Rolling o continuo: Se dividen las instancias EC2 del entorno en lotes y se va actualizando por lotes.
+            - All-at-Once (todo a la vez): Todas las instancias se actualizan a la vez. No provoca pérdida de saldos de ráfagas.
+            - Canary: Se redirige un porcentaje del tráfico a las nuevas instancias para ver su funcionamiento. No provoca pérdida de ráfagas.
+
     - AWS ELB
         - ALB. Error 503 si no hay ningún objetivo diposnible. Existe el equilibrio de carga entre zonas y está activado por defecto. Trabaja en la 7 capa ISO. Antes de contestar peticiones, existe un periodo de calentamiento.
         - NLB (Network Load Balancer) Trabaja en la 4 capa ISO. Rendimiento de red para millones de conexiones.
         Existen las sticky sessions que permite enrutar peticiones a un mismo grupo de objetivo (atacar siempre al mismo servidor desde un usuarios). Esta cookie se llama AWSALB. Un CLB puede dirigir más tráfico a tipos de instancias con mayor capacidad, con ello se evita que instancias menores se ahoguen.
-        
-    - AWS RDS
-        Incia automática el failover al standby (secundario) en caso de fallo del primario. Es decir, usar el nodo secundario si el primero falla. Las actualizaciones se aplican en el standby (secundario) y luego lo promociona a primario. Con Multi-AZ, la AZ ha actualizar, se apaga temporalmente y se trabaja con las activas. En Multi-AZ con las copias de seguridad automatizadas, no se supende la actividad E/S en el primario ya que estas se hacen del nodo secundario. Una instancia secundaria o en standby no permite usarse como lectura. La replicación de actualización en Multi-AZ se hacen de forma síncrona contra los secundarios.
-        Admite autoescalado de almacenamiento.
+        Si el equilibrio de carga entre zonas se activa, el tráfico se reparte por igual a todas las instancias, si no se reparten por zonas de disponibilidad. (Si on, 2-AZ1 y 10-AZ2 instancias, cada una recibe un 10%, si no, 50% para Az1 y se reparte entre las instancias.)
+      
+    - AWS EventBridge
+        Servicio basado en eventos que permite integración con socios SaaS de terceros.
+
+    - AWS Global Accelerator
+        Mejora el tráfico de red usando IP públicas. Usado principalmente para comunicación de red, UDP, MQTT o VoIP
+
+    - AWS Glue
+        Servición de extracción, transformación y carga ETL administrador por AWS para preparar y cargar datos para analisis. No es el más adecuado para el proceso de datos en tiempo real.
+       
+    - AWS IAM
+        Para conexiones HTTPs se puede estar este servicio como administrador de certificados si esa región no soporta ACM.
+
+    - AWS Kinesis
+        - Kinesis Data Streams. Recopila y procesa stremas de registros en tiempo real y los almacena desde 24 horas hasta 1 año.
+        - Kinesis Data Firehouse. Para cargar datos de streams en S3, Redshift o ElasticSearch. Por norma general, Data Streams interesa más.
         
     - AWS KMS
         Servicio para administrar claves de cifrado. Combina hardware y software seguro y de alta disponibilidad.
@@ -137,9 +125,32 @@ Servicios AWS
         - SSE-KMS. Similar a SSE-S3 y permite gestionar las claves. Proporciona auditoría.
         - CMKs. Clave del cliente administradas en KMS
 
-    - AWS EventBridge
-        Servicio basado en eventos que permite integración con socios SaaS de terceros.
+    - AWS Lambda
+        Lambda@Edge es para acercar la computación al usuario, más proceso que servir datos. Para aumentar la capacidad de procesamiento, se incrementa la RAM.
+        Existe la concurrencia reservada y provisionada. La reservada indica el número máximo de instancias que se ejecutan de una función. La provisionada tiene siempre lista N instancias para responder a las necesidades de carga.
+        Permite el uso de alias que apuntan a versiones desplegadas. Se puede dirigir un porcentaje de tráfico a un alias que trabaje con una versión concreta (alias ponderados).
+        Un alias no puede apuntar a otro.
         
+    - AWS Marketplace
+        Tienda online de software
+    
+    - AWS RDS
+        Incia automática el failover al standby (secundario) en caso de fallo del primario. Es decir, usar el nodo secundario si el primero falla. Las actualizaciones se aplican en el standby (secundario) y luego lo promociona a primario. Con Multi-AZ, la AZ ha actualizar, se apaga temporalmente y se trabaja con las activas. En Multi-AZ con las copias de seguridad automatizadas, no se supende la actividad E/S en el primario ya que estas se hacen del nodo secundario. Una instancia secundaria o en standby no permite usarse como lectura. La replicación de actualización en Multi-AZ se hacen de forma síncrona contra los secundarios.
+        Admite autoescalado de almacenamiento.
+        
+    - AWS SAM (Serverless Application Model)
+        Permite gestionar los recursos con CloudFormation y en la implementación serán desplegados. Usa plantillas SAM. Infrastructura para nuestra aplicación. Las plantillas extienden de plantillas de CloudFormation.
+    
+    - AWS SAR (Serverless Application Repository)
+        Repositorio de aplicaciones sin servidor reutilizables. Configuración por variables. Aplicación solo.
+    
+    - AWS Service Catalog
+        Permite a las organizaciones crear y administrar catálogos de servicios IT para luego usar en AWS.
+        
+    - AWS SES (Simple Email Service)
+        Envío de correos de forma masiva.
+        El backoff es, en lugar de reintentar de forma inmediata y agresiva, el cliente espera un tiempo entre intentos. El patrón más común es un backoff exponencial, donde el tiempo de espera se incrementa exponencialmente después de cada intento.
+         
     - AWS SNS (Simple Notification Service)
         Permite filtrar y distribuir mensajes a un gran número de SUSCRIPTORES (Lambda, Queue y sistemas distribuidos) También permite enviar push notifications a móviles, SMS y Correos.
         
@@ -154,19 +165,32 @@ Servicios AWS
             CreateQueue. Cuando se crea una cola, no se puede cambiar el nombre. El tiempo por defecto de espera de visibilidad es de 30 segundos.
             DelaySeconds configura cuanto se retrasa la entrege de todos los mensajes.
             MessageRetentionPeriod configura cuanto tiempo SQS tiene un mensaje.
-        
-    - AWS SES (Simple Email Service)
-        Envío de correos de forma masiva.
-        El backoff es, en lugar de reintentar de forma inmediata y agresiva, el cliente espera un tiempo entre intentos. El patrón más común es un backoff exponencial, donde el tiempo de espera se incrementa exponencialmente después de cada intento.
-        
-    - AWS Kinesis
-        - Kinesis Data Streams. Recopila y procesa stremas de registros en tiempo real y los almacena desde 24 horas hasta 1 año.
-        - Kinesis Data Firehouse. Para cargar datos de streams en S3, Redshift o ElasticSearch. Por norma general, Data Streams interesa más.
+            
+    - AWS SSM Parameter Store (Systems Manager Parameter Store)
+        Utiliza AWS KMS para los secure strings. 
+        Almacena pares de clave valor para usar en las aplicaciones de AWS.
+    
+    - AWS Step Functions.
+        Una unidad de trabajo es un Task realizado en una máquina de estados que es en lo que se basa este servicio. Para tareas de tipo Task, resource es obligatorio. Tipo Pass es para no hacer nada. Tipo Fail para redirigir errores. Para fallar controladamente se puede definir un catch.
+        Existen distinto estados del flujo, Task (indicar Resource), Choice (para condionales, indicar mínimo una), Parallel para proceso en paralelo (división por ramas, obligatorio Branches), Map para ejecutar un conjunto de steps para cada elemento del map de forma paralela. Pass para transformar información, el input es el output (útil para debug), Wait detiene la ejecución el tiempo indicado, ya sea relativo a ahora o una fecha en concreto.
+        Succeed para terminar una ejecución de forma correcta. Fail termina la ejecución como fallida a no ser que usemos un Catch para el error.
 
-    - AWS Glue
-        Servición de extracción, transformación y carga ETL administrador por AWS para preparar y cargar datos para analisis. No es el más adecuado para el proceso de datos en tiempo real.
+    - AWS Systems Manager
+        Proporciona visibilidad y control de su infrastuctura en AWS.
+       
+    - AWS S3:
+        Para acceder a recursos desde otro dominio es necesario configurar CORS. Para fichero mayores de 100 MB se recomienda usar carga multiparte. También existe S3 Transfer Acceleration que se apoya en CloudFront y EdgeLocations para enviar el tráfico a S3.
+        Los roles IAM y las políticas basadas en recursos delegan el acceso entre cuentas sólo dentro de una única partición. (región nort-us, partación aws y región china-1 pero partición aws-cn)
+        Para cifrar un PutObject con SSE-S3 la cabecera x-amz-server-side-encryption contendrá el valor AES256. Para cifrar con SSE-KMS, usaremos el valor aws:kms
+    
+    - AWS VPC
+        Permiten la creación de endpoints para conectar VPC privadas a servicios. Uso de AWS PrivateLink. Existen dos tipos de endpoints, de interfaz y de Gateway. De interfaz es una ENI (Elastic Network Interface) que teine una dirección IP privada dentro del rango de la subred y se usa como entrada. De Gateway es un gateway a los servicios S3, DynamoDb.
+        Para dar acceso a internet, es necesario que una subred pública disponga de Gateway NAT o instancia NAT.
+        VPC Flow Logs permite capturar inforamción sobre el tráfico IP de una VPC.
+    
+    - AWS WAF (Web Application Firewall)
+        Es un firewall de aplicaciones web que permite monitorizar las peticiones HTTP y HTTPs que se reenvían a CloudFront.
 
-    - AWS Elastic Beanstalk
-        Es un servicio para implementar y escalar aplicacións y servicios web desarrollados con Java, .NET, Node, Python, Ruby, Go y Docker. Usa CloudFormation para provisionar los recursos. Si un despliegue falla, las instancias con errores se reemplazarán por otras sanas con la versión correcta anterior.
-        Existe el drenaje de conexiones antes de comenzar un despliegue.
-        Permite la creación de varios entornos, accediendo a distintas versiones.
+    - AWS X-Ray
+        Es un servicio que ayuda a analizar y depurar aplicaciones distribuidas. Proporciona una vista de extremoa a extremo de las peticiones. Permite asumir un rol para publicar las trazas en un cuenta de AWS concreta.
+    
