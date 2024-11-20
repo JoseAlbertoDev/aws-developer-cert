@@ -10,10 +10,12 @@ Servicios AWS
         Existen varios tipos de integraciones, MOCK (respuesta preconfigurada), AWS_PROXY (para comunicar directamente el cliente y la function Lambda), HTTP_PROXY (Permite acceder directamente a los endpoints HTTP de un backend), HTTP (integración básica con un backend), AWS (expone servicios de AWS)
         Permite crear API de Websocket.
         Existen varios tipos de API que podemos crear, WebSocket (comunicación bidireaccional), REST (se compone de recursos y métodos, rútas con una jerarquía), HTTP (permite crear API RESTful con menor latencia y menos coste que REST)
+        Una etapa es una referencia lógica a un estado del ciclo de vida de su API.
+        Cada etapa permite configuración individual de caché, estrangulamiento, logs, variables o canary.
         Se debe de elegir en que etapa desplegar. Podemos elegir una etapa a la que atacar usando la varialble de etapa.
         Permite configurar planes de uso para monetizar un API.
         Permite el uso de plantillas de mapeo.
-        Proporciona almacenamiento en caché de respuestas y la compresión de la carga útil.
+        Se puede proporcionar almacenamiento en caché de respuestas y la compresión de la carga útil.
         
     - AWS AppSync. 
         Creación de API con GraphQL y varias fuentes de datos como bases de datos, microservicios u otras apis(Tiempo real)
@@ -52,6 +54,8 @@ Servicios AWS
         Change Sets permite revisar que cambios se van a aplicar en un entorno administrado con CloudFormation.
         La sección Transform: 'AWS::Serverless-2016-10-31' indica que se trata de una plantilla de modelo de aplicación sin servidor (SAM).
         Las funciones intrínsecas suelen empezar por Fn:: o !. Ejemplo: !Sub o Fn::Sub.
+        Parámetros Ref sobre información de AWS, AWS::AccountId, AWS::Region, AWS::StackName, AWS::NoValue (para setear null)
+        Los valores de salida exportados en CloudFormation deben tener nombres únicos dentro de una única región
         
     - AWS CloudTrail
         Auditoría del uso de los servicios. Proporciona un historia de eventos de la cuenta de AWS (por ejemplo, accesos a SSM Parameter store). Permite ver las llamadas que se realicen a SSM y KMS.
@@ -66,6 +70,7 @@ Servicios AWS
         Permite integración con S3, entre otros servicios.
         
     - AWS CodeBuild
+        Es un servicio de integración continua totalmente administrado que compila código fuente, ejecuta pruebas y produce paquetes de software listos para implementarse. 
         Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
         Los elementos de la cola para compilación tienen un tiempo de vida de 8 horas por defecto, si no se ejectura, se eliminará.
 
@@ -76,7 +81,11 @@ Servicios AWS
     
     - AWS CodeDeploy
         Permite varias formas de desplegar. In situ (detiene, actualiza e inicia aplicación de cada instancia del grupo de despliegue, permite configurar el ELB para desconectar instancias). Blue/Green (despliegue usando un nuevo AutoScaling Group).
+        CodeDeploy ofrece mucho control sobre los pasos de despliegue.
         Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
+
+    - AWS CodePipeline
+        Automatiza las fases de compilación, test y despliegue del proceso de publicación cada vez que se produce un cambio en el código.
 
     - AWS Cognito User Pools
         Con una correcta autenticación, se devuelve un token JWT siguiente el estandar OIDC.
@@ -91,6 +100,10 @@ Servicios AWS
         No soporta los endpoints de interfaz de VPC.
         DynamoDB es una base de datos NoSQL de valores clave, sin servidor y totalmente gestionada, diseñada para ejecutar aplicaciones de alto rendimiento a cualquier escala.
         La recuperación puntual (PITR) ayuda a proteger las tablas de DynamoDB de operaciones accidentales de escritura o eliminación. PITR proporciona copias de seguridad continuas de los datos de su tabla DynamoDB, y puede restaurar esa tabla a cualquier punto en el tiempo hasta el segundo durante los 35 días anteriores.
+        Al crear una tabla DynamoDB, además del nombre de la tabla, debe especificar la clave principal de la tabla.
+        El Tiempo de Vida (TTL) para DynamoDB te permite definir cuándo caducan los elementos de una tabla para que se eliminen automáticamente de la base de datos.
+        DynamoDB Streams permite obtener un registro de cambios de una tabla.
+        DAX es una caché en memoria mejorada.
         
     - AWS EBS
         Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
@@ -110,6 +123,9 @@ Servicios AWS
         Si recibimos un timeout, problablemente haya un error con los grupos de seguridad.
         El script de inicio con datos del usuario solo se ejecuta cuando una instancia se lanza por primera vez (se puede cambiar). Este script se ejectura con permisos de root (de ahí que haya que cambiar los permisos de ejecución luego de lo que creemos)
         ASG solo escalará al máximo configurado.
+        Los Auto Scaling Groups no pueden abarcar varias regiones.
+        n grupo de Auto Scaling puede contener instancias EC2 en una o varias zonas de disponibilidad dentro de la misma región.
+        Las instancias de tipo Burstable T2 es gratuita para cuentas nuevas durante 12 meses.
         Tipos de instancias:
             - Instancias dedicadas cómo host dedicados pero comparten hardware con otras instancias dedicadas. MAS BARATAS.
             - Host dedicado. Hardware exclusivo, más caro.
@@ -130,6 +146,7 @@ Servicios AWS
         Es un servicio para implementar y escalar aplicacións y servicios web desarrollados con Java, .NET, Node, Python, Ruby, Go y Docker. 
         Usa CloudFormation para provisionar los recursos. 
         Si un despliegue falla, las instancias con errores se reemplazarán por otras sanas con la versión correcta anterior.
+        Si falla en un despliegue Rolling (o rolling por lotes) los lotes desplegados correctamenete seguirán sirviendo la nueva versión hasta que se reinicien.
         Existe el drenaje de conexiones antes de comenzar un despliegue.
         Permite la creación de varios entornos, accediendo a distintas versiones.
         Los saldos de ráfagas de EC2 se pierden cuando se sustituyen las instancias antiguas con nuevas de golpe.
@@ -170,7 +187,8 @@ Servicios AWS
         Claves de acceso de usuario de IAM se compone de un id de clave de acceso y la clave secreta de acceso (uso para CLI).
         Para hacer una política genérica usaremos Variables de la política IAM.
         Las políticas de confianza definen qué entidades principales (cuentas, usuarios, roles y usuarios federados) pueden asumir el rol.
-        IAM Access Analyzer es un servicio que permite analizar que permisos no son necesarios o no deben de existir.
+        AWS IAM Access Analyzer le ayuda a identificar los recursos de su organización y cuentas, como buckets de Amazon S3 o roles de IAM, que se comparten con una entidad externa.
+        Access Advisor identifica roles no usados para su posterior eliminicación.
 
     - AWS Kinesis
         - Kinesis Data Streams. Recopila y procesa stremas de registros en tiempo real y los almacena desde 24 horas hasta 1 año.
@@ -191,7 +209,10 @@ Servicios AWS
     - AWS Lambda
         Lambda@Edge es para acercar la computación al usuario, más proceso que servir datos. 
         Para aumentar la capacidad de procesamiento, se incrementa la RAM.
-        Existe la concurrencia reservada y provisionada. La reservada indica el número máximo de instancias que se ejecutan de una función. La provisionada tiene siempre lista N instancias para responder a las necesidades de carga.
+        Establezca un valor para la memoria de entre 128 MB y 10.240 MB en incrementos de 1 MB a 1.769 MB.
+        Existe la concurrencia reservada y provisionada. 
+            La reservada indica el número máximo de instancias que se ejecutan de una función. 
+            La provisionada tiene siempre lista N instancias para responder a las necesidades de carga.
         Permite el uso de alias que apuntan a versiones desplegadas. Se puede dirigir un porcentaje de tráfico a un alias que trabaje con una versión concreta (alias ponderados).
         Un alias no puede apuntar a otro.
         Autorizador Lambda es una función de Lambda que permite controlar el acceso al API usando autenticación OAuth o SAML (token de portador)
@@ -200,19 +221,39 @@ Servicios AWS
         Tienda online de software
     
     - AWS RDS
-        Incia automática el failover al standby (secundario) en caso de fallo del primario. Es decir, usar el nodo secundario si el primero falla. Las actualizaciones se aplican en el standby (secundario) y luego lo promociona a primario. Con Multi-AZ, la AZ ha actualizar, se apaga temporalmente y se trabaja con las activas. En Multi-AZ con las copias de seguridad automatizadas, no se supende la actividad E/S en el primario ya que estas se hacen del nodo secundario. Una instancia secundaria o en standby no permite usarse como lectura. La replicación de actualización en Multi-AZ se hacen de forma síncrona contra los secundarios.
+        Inicia automática el failover al standby (secundario) en caso de fallo del primario. Es decir, usar el nodo secundario si el primero falla. 
+        Las actualizaciones se aplican en el standby (secundario) y luego lo promociona a primario. 
+        Con Multi-AZ, la AZ ha actualizar, se apaga temporalmente y se trabaja con las activas. 
+        En Multi-AZ con las copias de seguridad automatizadas, no se supende la actividad E/S en el primario ya que estas se hacen del nodo secundario. 
+        Una instancia secundaria o en standby no permite usarse como lectura. 
+        La replicación de actualización en Multi-AZ se hacen de forma síncrona contra los secundarios.
         Admite autoescalado de almacenamiento.
+        Si no está la Multi-AZ activa, Amazon RDS utiliza la funcionalidad de replicación integrada del motor de base de datos PostgreSQL para crear instancias de lecturas.
     
     - AWS Route 53
         Registro CNAME para generar un DNS para otro endpoint ya expuesto.
         Registro A se utiliza para apuntar un dominio o subdominio a una dirección IP.
+        Políticas de enrutamiento:
+            - Geolocalización, conmutación por error (recurso sano o no, redirigir a otro), latencia, ponderada (reparto de tráfico).
 
     - AWS SAM (Serverless Application Model)
         Permite gestionar los recursos con CloudFormation y en la implementación serán desplegados. Usa plantillas SAM. Infrastructura para nuestra aplicación. Las plantillas extienden de plantillas de CloudFormation.
+        SAM soporta los siguientes tipos de recursos:
+            AWS::Serverless::Api
+            AWS::Serverless::Application
+            AWS::Serverless::Function
+            AWS::Serverless::HttpApi
+            AWS::Serverless::LayerVersion
+            AWS::Serverless::SimpleTable (Tabla DynamoDB)
+            AWS::Serverless::StateMachine
     
     - AWS SAR (Serverless Application Repository)
         Repositorio de aplicaciones sin servidor reutilizables. Configuración por variables. Aplicación solo.
     
+    - AWS Secret Manager
+        Permite rotar, gestionar y recuperar fácilmente credenciales de bases de datos, claves API y otros secretos a lo largo de su ciclo de vida.
+        Ofrece rotación de secretos con integración incorporada para Amazon RDS, Amazon Redshift y Amazon DocumentDB.
+
     - AWS Service Catalog
         Permite a las organizaciones crear y administrar catálogos de servicios IT para luego usar en AWS.
         
@@ -259,7 +300,8 @@ Servicios AWS
         S3 Analytics para ver que clase de almacenamiento será el más adecuando según el acceso a un fichero.
     
     - AWS VPC
-        Permiten la creación de endpoints para conectar VPC privadas a servicios. Uso de AWS PrivateLink. Existen dos tipos de endpoints, de interfaz y de Gateway. De interfaz es una ENI (Elastic Network Interface) que teine una dirección IP privada dentro del rango de la subred y se usa como entrada. De Gateway es un gateway a los servicios S3, DynamoDb.
+        Permiten la creación de endpoints para conectar VPC privadas a servicios. 
+        Uso de AWS PrivateLink. Existen dos tipos de endpoints, de interfaz y de Gateway. De interfaz es una ENI (Elastic Network Interface) que tiene una dirección IP privada dentro del rango de la subred y se usa como entrada. De Gateway es un gateway a los servicios S3, DynamoDb.
         Para dar acceso a internet, es necesario que una subred pública disponga de Gateway NAT o instancia NAT.
         VPC Flow Logs permite capturar inforamción sobre el tráfico IP de una VPC.
     
@@ -267,5 +309,8 @@ Servicios AWS
         Es un firewall de aplicaciones web que permite monitorizar las peticiones HTTP y HTTPs que se reenvían a CloudFront.
 
     - AWS X-Ray
-        Es un servicio que ayuda a analizar y depurar aplicaciones distribuidas. Proporciona una vista de extremoa a extremo de las peticiones. Permite asumir un rol para publicar las trazas en un cuenta de AWS concreta.
+        Es un servicio que ayuda a analizar y depurar aplicaciones distribuidas. 
+        Proporciona una vista de extremoa a extremo de las peticiones.
+        Permite asumir un rol para publicar las trazas en un cuenta de AWS concreta.
+        Las reglas de muestreo indican al SDK de X-Ray cuántas peticiones debe registrar para un conjunto de criterios.
     
