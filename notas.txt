@@ -1,6 +1,6 @@
 consultar FAQs servicios AWS
 
-Continuar pregunta 45
+Continuar pregunta 15
 
 Servicios AWS
     - AWS API Gateway
@@ -73,6 +73,7 @@ Servicios AWS
         Es un servicio de integración continua totalmente administrado que compila código fuente, ejecuta pruebas y produce paquetes de software listos para implementarse. 
         Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
         Los elementos de la cola para compilación tienen un tiempo de vida de 8 horas por defecto, si no se ejectura, se eliminará.
+        Permite almacenar las dependencias en caché.
 
     - AWS CodeCommit
         Permite acceder a repositorios externos usando credenciales GIT dentro de CodeCommit, por ejemplo clonar un repositorio externo usando HTTPs.
@@ -88,10 +89,17 @@ Servicios AWS
         Automatiza las fases de compilación, test y despliegue del proceso de publicación cada vez que se produce un cambio en el código.
 
     - AWS Cognito User Pools
-        Con una correcta autenticación, se devuelve un token JWT siguiente el estandar OIDC.
+        Con una correcta autenticación, se devuelve un token JWT siguiendo el estandar OIDC. Maneja la autenticación.
 
     - AWS Cognito Identity Pools
         Sin token. Para proporcionar acceso a servicios  de AWS.
+        Con un grupo de identidades, puede obtener credenciales de AWS temporales y con privilegios limitados para obtener acceso a otros servicios de AWS.
+        Proveedores públicos: 
+            Iniciar sesión con Amazon (Identity Pools), Facebook (Identity Pools), Google (Identity Pools), Iniciar sesión con Apple (Identity Pools).
+            Amazon Cognito User Pools (Grupos de usuarios de Amazon Cognito)
+            Proveedores de Open ID Connect (Identity Pools)
+            Proveedores de identidad SAML (Identity Pools)
+            Identidades autenticadas por desarrolladores (Identity Pools)
 
     - AWS Cognito Sync
         Permite la sincronización de datos de perfil de usuario entre dispositivos móviles y web sin usar un backend propio.
@@ -104,11 +112,18 @@ Servicios AWS
         El Tiempo de Vida (TTL) para DynamoDB te permite definir cuándo caducan los elementos de una tabla para que se eliminen automáticamente de la base de datos.
         DynamoDB Streams permite obtener un registro de cambios de una tabla.
         DAX es una caché en memoria mejorada.
-        
+        DynamoDB soporta lecturas consistentes y fuertemente consistentes (Lo podemos activar en una petición usando ConsistentRead = true).
+
     - AWS EBS
         Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
         Soporta cifrado en vuelo y en reposo usando KMS.
-        
+        Tipos de volúmenes:
+            - gp2: Máximo 5.3TiB
+    
+    - AWS ECR (Elastic Container Registry)
+        Para implementar una imagen de contenedor en Lambda, la imagen de contenedor debe implementar la API de tiempo de ejecución de Lambda.
+        Debe crear la función Lambda desde la misma cuenta que el registro de contenedores en Amazon ECR.
+
     - AWS ECS
         Configuración de propiedades del Cluster mediante el fichero /etc/ecs/ecs.config, sobre todo si queremos registrar un cluster con un nombre diferencia al ya existente.
         Es un servicio de administración de contenedores docker en un Cluster. 
@@ -122,10 +137,12 @@ Servicios AWS
         DisableApiTermination permite controlar si se permite el terminar una instacia EC2 o no. 
         Si recibimos un timeout, problablemente haya un error con los grupos de seguridad.
         El script de inicio con datos del usuario solo se ejecuta cuando una instancia se lanza por primera vez (se puede cambiar). Este script se ejectura con permisos de root (de ahí que haya que cambiar los permisos de ejecución luego de lo que creemos)
-        ASG solo escalará al máximo configurado.
-        Los Auto Scaling Groups no pueden abarcar varias regiones.
-        n grupo de Auto Scaling puede contener instancias EC2 en una o varias zonas de disponibilidad dentro de la misma región.
         Las instancias de tipo Burstable T2 es gratuita para cuentas nuevas durante 12 meses.
+        - AutoScaling Group (ASG)
+            Los Auto Scaling Groups no pueden abarcar varias regiones.
+            Un grupo de Auto Scaling puede contener instancias EC2 en una o varias zonas de disponibilidad dentro de la misma región.
+            ASG solo escalará al máximo configurado.
+            Cuando una instancia no está sana, se termina y se crea una nueva.
         Tipos de instancias:
             - Instancias dedicadas cómo host dedicados pero comparten hardware con otras instancias dedicadas. MAS BARATAS.
             - Host dedicado. Hardware exclusivo, más caro.
@@ -152,13 +169,14 @@ Servicios AWS
         Los saldos de ráfagas de EC2 se pierden cuando se sustituyen las instancias antiguas con nuevas de golpe.
         Usa la carpeta .ebextensions/ para configurar recursos a provisionar. Con extensión .config .ebextension/{nombre-recurso-aws}.config
         - Desplieges
-            - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado.
+            - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado. La más segura.
             - División de tráfico: Lanza un conjunto completo de neuvas instancias y luego envía un procentaje de peticiones durante un periodo para evaluar.
             - Rolling o continuo: 
                 - Estandar: El número de lotes es la cantidad de instancias dividadas por n y se van actualizando por lotes.
-                - Por lotes: Igual que la estandar pero genera costes adicionales ya que crea un nuevo lote para garantizar la disponibilidad y estas máquinas extras se pagan.
+                - Por lotes: Igual que la estandar pero genera costes adicionales ya que crea un nuevo lote para garantizar la disponibilidad y estas máquinas extras se pagan. Para revertir en caso de fallo, se debe de hacer manual.
             - All-at-Once (todo a la vez): Todas las instancias se actualizan a la vez. No provoca pérdida de saldos de ráfagas.
             - Canary: Se redirige un porcentaje del tráfico a las nuevas instancias para ver su funcionamiento. No provoca pérdida de ráfagas.
+            - Blue/Green:
 
     - AWS ELB
         - ALB. 
@@ -187,12 +205,13 @@ Servicios AWS
         Claves de acceso de usuario de IAM se compone de un id de clave de acceso y la clave secreta de acceso (uso para CLI).
         Para hacer una política genérica usaremos Variables de la política IAM.
         Las políticas de confianza definen qué entidades principales (cuentas, usuarios, roles y usuarios federados) pueden asumir el rol.
+        Desde la cuenta que se quiere dar acceso, se crea una política de confianza para la cuenta externa y una política de acceso para el recurso, y la cuenta externa referencia la política de acceso.
         AWS IAM Access Analyzer le ayuda a identificar los recursos de su organización y cuentas, como buckets de Amazon S3 o roles de IAM, que se comparten con una entidad externa.
         Access Advisor identifica roles no usados para su posterior eliminicación.
 
     - AWS Kinesis
         - Kinesis Data Streams. Recopila y procesa stremas de registros en tiempo real y los almacena desde 24 horas hasta 1 año.
-        - Kinesis Data Firehouse. Para cargar datos de streams en S3, Redshift o ElasticSearch. Por norma general, Data Streams interesa más.
+        - Kinesis Data Firehouse. Para cargar datos de streams en S3, Redshift, ElasticSearch (ES) y Splunk. Por norma general, Data Streams interesa más.
         Método del API para escribir registros, API PutRecords, hasta 500 en una sola llamada. Cada registro puede ser de hasta 1 MB, con un máximo de 5 MB para la petición completa.
         Cada fragmento soporta escrituras de hasta 1.000 registros por segundo con 1 MB de escritura como máximo.
         
@@ -215,7 +234,9 @@ Servicios AWS
             La provisionada tiene siempre lista N instancias para responder a las necesidades de carga.
         Permite el uso de alias que apuntan a versiones desplegadas. Se puede dirigir un porcentaje de tráfico a un alias que trabaje con una versión concreta (alias ponderados).
         Un alias no puede apuntar a otro.
-        Autorizador Lambda es una función de Lambda que permite controlar el acceso al API usando autenticación OAuth o SAML (token de portador)
+        Autorizador Lambda es una función de Lambda que permite controlar el acceso al API usando autenticación OAuth o SAML (token de portador).
+        Lambda actualmente solo soporta imágenes de contenedor basadas en Linux (Para ECR y ECS).
+        Puede desplegar la función Lambda como imagen de contenedor con un tamaño máximo de 10 GB.
         
     - AWS Marketplace
         Tienda online de software
@@ -237,7 +258,10 @@ Servicios AWS
             - Geolocalización, conmutación por error (recurso sano o no, redirigir a otro), latencia, ponderada (reparto de tráfico).
 
     - AWS SAM (Serverless Application Model)
-        Permite gestionar los recursos con CloudFormation y en la implementación serán desplegados. Usa plantillas SAM. Infrastructura para nuestra aplicación. Las plantillas extienden de plantillas de CloudFormation.
+        Permite gestionar los recursos con CloudFormation y en la implementación serán desplegados. 
+        Usa plantillas SAM. Infrastructura para nuestra aplicación. 
+        Las plantillas extienden de plantillas de CloudFormation.
+        Secciones obligatorias de una plantilla, Resources y Transform.
         SAM soporta los siguientes tipos de recursos:
             AWS::Serverless::Api
             AWS::Serverless::Application
@@ -303,7 +327,7 @@ Servicios AWS
         Permiten la creación de endpoints para conectar VPC privadas a servicios. 
         Uso de AWS PrivateLink. Existen dos tipos de endpoints, de interfaz y de Gateway. De interfaz es una ENI (Elastic Network Interface) que tiene una dirección IP privada dentro del rango de la subred y se usa como entrada. De Gateway es un gateway a los servicios S3, DynamoDb.
         Para dar acceso a internet, es necesario que una subred pública disponga de Gateway NAT o instancia NAT.
-        VPC Flow Logs permite capturar inforamción sobre el tráfico IP de una VPC.
+        VPC Flow Logs permite capturar inforamción sobre el tráfico IP de una VPC. Los datos de los logs de flujo se pueden publicar en Amazon CloudWatch Logs o Amazon S3.
     
     - AWS WAF (Web Application Firewall)
         Es un firewall de aplicaciones web que permite monitorizar las peticiones HTTP y HTTPs que se reenvían a CloudFront.
