@@ -16,6 +16,11 @@ Servicios AWS
         Permite configurar planes de uso para monetizar un API.
         Permite el uso de plantillas de mapeo.
         Se puede proporcionar almacenamiento en caché de respuestas y la compresión de la carga útil.
+        No soporta STS como autenticación.
+        Exiten autorizadores del tipo COGNITO_USER_POOLS
+
+    - AWS Athena
+        Es un servicio de consulta que facilita el análisis de datos en Amzaon S3 mediante SQL estándar.
         
     - AWS AppSync. 
         Creación de API con GraphQL y varias fuentes de datos como bases de datos, microservicios u otras apis(Tiempo real)
@@ -55,8 +60,20 @@ Servicios AWS
         La sección Transform: 'AWS::Serverless-2016-10-31' indica que se trata de una plantilla de modelo de aplicación sin servidor (SAM).
         Las funciones intrínsecas suelen empezar por Fn:: o !. Ejemplo: !Sub o Fn::Sub.
         Parámetros Ref sobre información de AWS, AWS::AccountId, AWS::Region, AWS::StackName, AWS::NoValue (para setear null)
-        Los valores de salida exportados en CloudFormation deben tener nombres únicos dentro de una única región
-        
+        Los valores de salida exportados en CloudFormation deben tener nombres únicos dentro de una única región.
+        CloudFormation soporta los siguientes tipos de parámetros:
+            - String – Una cadena literal
+            - Number – Un entero o flotante
+            - List<Number> – Una matriz de números enteros o flotantes
+            - CommaDelimitedList – Una matriz de Strings literales separadas por comas
+            - AWS::EC2::KeyPair::KeyName – Un nombre de par de claves de Amazon EC2
+            - AWS::EC2::SecurityGroup::Id – Un ID de grupo de seguridad
+            - AWS::EC2::Subnet::Id – Un ID de subred
+            - AWS::EC2::VPC::Id – Un ID de VPC
+            - List<AWS::EC2::VPC::Id> – Una matriz de VPC IDs
+            - List<AWS::EC2::SecurityGroup::Id> – Una matriz de IDs de grupos de seguridad
+            - List<AWS::EC2::Subnet::Id> – Una matriz de IDs de subred
+            
     - AWS CloudTrail
         Auditoría del uso de los servicios. Proporciona un historia de eventos de la cuenta de AWS (por ejemplo, accesos a SSM Parameter store). Permite ver las llamadas que se realicen a SSM y KMS.
         No se puede usar para depurar y rastrear datos entre cuentas.
@@ -74,6 +91,8 @@ Servicios AWS
         Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
         Los elementos de la cola para compilación tienen un tiempo de vida de 8 horas por defecto, si no se ejectura, se eliminará.
         Permite almacenar las dependencias en caché.
+        Permite integración con S3 y CloudWatch Logs.
+        Usa el fichero buildspec.yml.
 
     - AWS CodeCommit
         Permite acceder a repositorios externos usando credenciales GIT dentro de CodeCommit, por ejemplo clonar un repositorio externo usando HTTPs.
@@ -84,12 +103,16 @@ Servicios AWS
         Permite varias formas de desplegar. In situ (detiene, actualiza e inicia aplicación de cada instancia del grupo de despliegue, permite configurar el ELB para desconectar instancias). Blue/Green (despliegue usando un nuevo AutoScaling Group).
         CodeDeploy ofrece mucho control sobre los pasos de despliegue.
         Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
+        Usa el fichero appspec.yml que se situa en la raíz del proyecto.
+        Soporta hooks y se ejecutan una sola vez por despliegue, ValidateService es el último hook del despliegue.
 
     - AWS CodePipeline
         Automatiza las fases de compilación, test y despliegue del proceso de publicación cada vez que se produce un cambio en el código.
 
     - AWS Cognito User Pools
         Con una correcta autenticación, se devuelve un token JWT siguiendo el estandar OIDC. Maneja la autenticación.
+        Amazon Cognito proporciona autenticación, autorización y gestión de usuarios para sus aplicaciones web y móviles. 
+        Usa nombre de usuario y una contraseña, o a través de terceros como Facebook, Amazon, Google o Apple.
 
     - AWS Cognito Identity Pools
         Sin token. Para proporcionar acceso a servicios  de AWS.
@@ -113,12 +136,20 @@ Servicios AWS
         DynamoDB Streams permite obtener un registro de cambios de una tabla.
         DAX es una caché en memoria mejorada.
         DynamoDB soporta lecturas consistentes y fuertemente consistentes (Lo podemos activar en una petición usando ConsistentRead = true).
+        Soporta escrituras condicionales.
+        Tamaño máximo para un elemento de 400kb.
+        Podemos usar el método TransactWriteItems (max 25 ops y 4MB),TransactGetItems del API para realizar transaccions.
+        UpdateItem, aparte del update, si no existe el elemento, lo crea.
+        Las copias de seguridad, bajo demanda o recuperación puntual, se escriben en S3, pero se tienen acceso a esos buckets.
+        Una unidad de capacidad de lectura equivale a una lectura consistente por segundo o bien a dos lecturas eventualmente consistente para elementos de hasta 4kb.
 
     - AWS EBS
         Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
         Soporta cifrado en vuelo y en reposo usando KMS.
+        Los volúmenes EBS están bloqueados por AZ.
         Tipos de volúmenes:
             - gp2: Máximo 5.3TiB
+            - io1: Entre 4GiB y 16 TiB con un IOPS máximo de 10000
     
     - AWS ECR (Elastic Container Registry)
         Para implementar una imagen de contenedor en Lambda, la imagen de contenedor debe implementar la API de tiempo de ejecución de Lambda.
@@ -148,6 +179,7 @@ Servicios AWS
             - Host dedicado. Hardware exclusivo, más caro.
             - Instancia spot: Uso solo cuando está disponible, muy barata.
             - Bajo demanda: Se paga por el consumo por segundo, una de las tarifas más caras.
+            - Instancias reservadas. Puede ser regionales o por zona. Por zona permite reservar capacidad. Se factura solo 3600 segundos con reducción de precio, luego se cobra como bajo demanda.
     
     - AWS EFS
         Almacenamiento compartido entre máquinas EC2. 
@@ -168,6 +200,7 @@ Servicios AWS
         Permite la creación de varios entornos, accediendo a distintas versiones.
         Los saldos de ráfagas de EC2 se pierden cuando se sustituyen las instancias antiguas con nuevas de golpe.
         Usa la carpeta .ebextensions/ para configurar recursos a provisionar. Con extensión .config .ebextension/{nombre-recurso-aws}.config
+        No soporta SSM Parameter para las configuraciones.
         - Desplieges
             - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado. La más segura.
             - División de tráfico: Lanza un conjunto completo de neuvas instancias y luego envía un procentaje de peticiones durante un periodo para evaluar.
@@ -185,6 +218,8 @@ Servicios AWS
             ALB request tracing añade un identificador único a cada petición.
         - NLB (Network Load Balancer) 
             Trabaja en la 4 capa ISO. Rendimiento de red para millones de conexiones.
+        - CLB
+            Debe mapear los puertos de forma estática.
         Existen las sticky sessions que permite enrutar peticiones a un mismo grupo de objetivo (atacar siempre al mismo servidor desde un usuarios). Esta cookie se llama AWSALB. 
         Un CLB puede dirigir más tráfico a tipos de instancias con mayor capacidad, con ello se evita que instancias menores se ahoguen.
         Si el equilibrio de carga entre zonas se activa (activo por defecto), el tráfico se reparte por igual a todas las instancias, si no se reparten por zonas de disponibilidad. (Si on, 2-AZ1 y 10-AZ2 instancias, cada una recibe un 10%, si no, 50% para Az1 y se reparte entre las instancias.)
@@ -199,6 +234,7 @@ Servicios AWS
 
     - AWS Glue
         Servición de extracción, transformación y carga ETL administrador por AWS para preparar y cargar datos para analisis. No es el más adecuado para el proceso de datos en tiempo real.
+        Permite realizar una copia de seguridad de Dynamo DB y almacenarla en S3.
        
     - AWS IAM
         Para conexiones HTTPs se puede estar este servicio como administrador de certificados si esa región no soporta ACM.
@@ -219,6 +255,7 @@ Servicios AWS
         Servicio para administrar claves de cifrado. Combina hardware y software seguro y de alta disponibilidad.
         SSL no cifra en reposo, cifra en tránsito.
         KMS almacena la CMK, y recibe datos de los clientes, que cifra y devuelve.
+        Máximo 4kb para cifrar por api, para mayor tamaño, hay que usar el SDK.
         Permite la rotación automática de claves.
         - SSE-C Cifrado del lado del servidor. Claves proporcionadas por el cliente.
         - SSE-S3. Cifrado del lado del servidor. Claves administradas por Amazon con rotación automática. Usa AES256
@@ -237,6 +274,7 @@ Servicios AWS
         Autorizador Lambda es una función de Lambda que permite controlar el acceso al API usando autenticación OAuth o SAML (token de portador).
         Lambda actualmente solo soporta imágenes de contenedor basadas en Linux (Para ECR y ECS).
         Puede desplegar la función Lambda como imagen de contenedor con un tamaño máximo de 10 GB.
+        Las variables de entorno no pueden superar los 4kb.
         
     - AWS Marketplace
         Tienda online de software
@@ -287,12 +325,15 @@ Servicios AWS
          
     - AWS SNS (Simple Notification Service)
         Permite filtrar y distribuir mensajes a un gran número de SUSCRIPTORES (Lambda, Queue y sistemas distribuidos) También permite enviar push notifications a móviles, SMS y Correos.
+        Permite configurar reglas de filtrados a los temas y que solo algunos suscriptores reciban los mensajes.
         
     - AWS SQS (Simple Queue Service)
         Sistema de colas con dos tipos. Standard (máximo rendimiento, orden de mejor esfuerza y al menos una entrega) y FIFO (first-in first-out y la entrega del mensaje está garantizada). Junto con SNS se puede crear un sistema de fan-out, es decir, enviar un mismo mensaje a varios suscriptores. Mensaje recibido por SQS, envíado a SNS y este notifica a todos.
         Permite el cifrado con SSE (cifrado del lador del servidor) usando claves administra de los dos tipos de colas.
         Tamaño máximo de los mensajes de 256 KB, mínimo un byte.
+        Almacen infinito de mensajes en la cola. Los consumidos (mensajes en vuelo o inflight) tienen un máximo de 120.000 y se deben eliminar una vez procesados.
         Las etiquetas de las colas distinguen mayúsculas.
+        Existe la delay queue que permite retrasar la entrega de los mensajes a los consumidores.
         - API
             DeleteQueue para borrar una cola y su contenido. 
             PurgeQueue purga el contenido de una cola.
@@ -322,12 +363,18 @@ Servicios AWS
         Para cifrar con SSE-S3 usaremos la cabecera s3:x-amz-server-side-encryption":"aws:AES256"
         S3 Object Lock le permite almacenar objetos utilizando un modelo "Write Once Read Many"
         S3 Analytics para ver que clase de almacenamiento será el más adecuando según el acceso a un fichero.
+        S3 Access Logs permite dejar una traza de acceso a S3.
+        Permite compartir objetos privados crean una URL prefirmada y será válida durante un tiempo concreto.
+
+    - AWS Trusted Advisor
+        Es un servicio que inspeccion nuestro entorno y hace recomendaciones para ahorrar dinero, mejorar el rendimiento o cerrar brechas de seguridad.
     
     - AWS VPC
         Permiten la creación de endpoints para conectar VPC privadas a servicios. 
         Uso de AWS PrivateLink. Existen dos tipos de endpoints, de interfaz y de Gateway. De interfaz es una ENI (Elastic Network Interface) que tiene una dirección IP privada dentro del rango de la subred y se usa como entrada. De Gateway es un gateway a los servicios S3, DynamoDb.
         Para dar acceso a internet, es necesario que una subred pública disponga de Gateway NAT o instancia NAT.
         VPC Flow Logs permite capturar inforamción sobre el tráfico IP de una VPC. Los datos de los logs de flujo se pueden publicar en Amazon CloudWatch Logs o Amazon S3.
+        Las subredes siempre tienen configurada una tabla de enrutamiento.
     
     - AWS WAF (Web Application Firewall)
         Es un firewall de aplicaciones web que permite monitorizar las peticiones HTTP y HTTPs que se reenvían a CloudFront.
@@ -335,6 +382,7 @@ Servicios AWS
     - AWS X-Ray
         Es un servicio que ayuda a analizar y depurar aplicaciones distribuidas. 
         Proporciona una vista de extremoa a extremo de las peticiones.
+        Es necesario configurar un rol para que los recursos puedan usar este servicio.
         Permite asumir un rol para publicar las trazas en un cuenta de AWS concreta.
         Las reglas de muestreo indican al SDK de X-Ray cuántas peticiones debe registrar para un conjunto de criterios.
     
