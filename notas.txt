@@ -1,6 +1,6 @@
 consultar FAQs servicios AWS
 
-Continuar pregunta 15
+Continuar pregunta 41
 
 Servicios AWS
     - AWS API Gateway
@@ -17,7 +17,8 @@ Servicios AWS
         Permite el uso de plantillas de mapeo.
         Se puede proporcionar almacenamiento en caché de respuestas y la compresión de la carga útil.
         No soporta STS como autenticación.
-        Exiten autorizadores del tipo COGNITO_USER_POOLS
+        Exiten autorizadores del tipo COGNITO_USER_POOLS.
+        Podemos pasar una etapa a otra actualizando la variable de etapa o desplegando en el entorno siguiente.
 
     - AWS Athena
         Es un servicio de consulta que facilita el análisis de datos en Amzaon S3 mediante SQL estándar.
@@ -59,8 +60,10 @@ Servicios AWS
         Change Sets permite revisar que cambios se van a aplicar en un entorno administrado con CloudFormation.
         La sección Transform: 'AWS::Serverless-2016-10-31' indica que se trata de una plantilla de modelo de aplicación sin servidor (SAM).
         Las funciones intrínsecas suelen empezar por Fn:: o !. Ejemplo: !Sub o Fn::Sub.
-        Parámetros Ref sobre información de AWS, AWS::AccountId, AWS::Region, AWS::StackName, AWS::NoValue (para setear null)
+        Parámetros Ref o pseudoparámetros dan información de AWS, AWS::AccountId, AWS::Region, AWS::StackName, AWS::NoValue (para setear null)
         Los valores de salida exportados en CloudFormation deben tener nombres únicos dentro de una única región.
+        Se puede configurar los valores permitidos usando AllowedValues.
+
         CloudFormation soporta los siguientes tipos de parámetros:
             - String – Una cadena literal
             - Number – Un entero o flotante
@@ -80,7 +83,7 @@ Servicios AWS
     
     - AWS CloudWatch
         - AWS CloudWatch Logs Insights. Permite buscar y analizar logs en CloudWatch Logs.
-        - AWS CloudWatch Events. Ofrece un stream casi en tiempo real de eventos del sistema. Para notificaciones.
+        - AWS CloudWatch Events. Ofrece un stream casi en tiempo real de eventos del sistema. Para notificaciones. No permite detectar errores en el código de Lambda.
         Permite la ingesta de métricas personalizadas. Cada métrica puede ser de Resolución estandar (granularidad de un minuto) o de Alta resolución (granularidad de un segundo). Los servicios de AWS usan la estandar por defecto.
         Las de alta resolución se pueden leer y recuperar cada 1, 5, 10, 30 segundos o en múltiplos de 60 segundos. La creación de un métrica personalizada se ahce con el método del API PutMetricData. Las alarmas se puede crear por métrica o compuestas.
         Existen dos tipos de monitorización, básica (publicación cada 5 minutos) y detallada (publicación cada minuto).
@@ -88,6 +91,7 @@ Servicios AWS
         
     - AWS CodeBuild
         Es un servicio de integración continua totalmente administrado que compila código fuente, ejecuta pruebas y produce paquetes de software listos para implementarse. 
+        Escala de forma automática, gestionado por AWS.
         Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
         Los elementos de la cola para compilación tienen un tiempo de vida de 8 horas por defecto, si no se ejectura, se eliminará.
         Permite almacenar las dependencias en caché.
@@ -105,6 +109,7 @@ Servicios AWS
         Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
         Usa el fichero appspec.yml que se situa en la raíz del proyecto.
         Soporta hooks y se ejecutan una sola vez por despliegue, ValidateService es el último hook del despliegue.
+        Despliegue de Blue-Green
 
     - AWS CodePipeline
         Automatiza las fases de compilación, test y despliegue del proceso de publicación cada vez que se produce un cambio en el código.
@@ -169,6 +174,7 @@ Servicios AWS
         Si recibimos un timeout, problablemente haya un error con los grupos de seguridad.
         El script de inicio con datos del usuario solo se ejecuta cuando una instancia se lanza por primera vez (se puede cambiar). Este script se ejectura con permisos de root (de ahí que haya que cambiar los permisos de ejecución luego de lo que creemos)
         Las instancias de tipo Burstable T2 es gratuita para cuentas nuevas durante 12 meses.
+        El uso medio de RAM es una métrica personalizada.
         - AutoScaling Group (ASG)
             Los Auto Scaling Groups no pueden abarcar varias regiones.
             Un grupo de Auto Scaling puede contener instancias EC2 en una o varias zonas de disponibilidad dentro de la misma región.
@@ -200,6 +206,7 @@ Servicios AWS
         Permite la creación de varios entornos, accediendo a distintas versiones.
         Los saldos de ráfagas de EC2 se pierden cuando se sustituyen las instancias antiguas con nuevas de golpe.
         Usa la carpeta .ebextensions/ para configurar recursos a provisionar. Con extensión .config .ebextension/{nombre-recurso-aws}.config
+        Utiliza instancias EC2 para el despliegue.
         No soporta SSM Parameter para las configuraciones.
         - Desplieges
             - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado. La más segura.
@@ -225,9 +232,14 @@ Servicios AWS
         Si el equilibrio de carga entre zonas se activa (activo por defecto), el tráfico se reparte por igual a todas las instancias, si no se reparten por zonas de disponibilidad. (Si on, 2-AZ1 y 10-AZ2 instancias, cada una recibe un 10%, si no, 50% para Az1 y se reparte entre las instancias.)
         Permise separar el tráfico público del privado.
         Un ELB solo puede apuntar a instancias EC2 dentro de una región.
+        Agrega la cabecera X-Forwarded-For con la ip del origen.
       
     - AWS EventBridge
         Servicio basado en eventos que permite integración con socios SaaS de terceros.
+
+    - AWS Fargate
+        Es un motor informático sin servidor para contenedores que funciona con ECS y EKS.
+        Elimina la necesidad de aprovisionar y administrar servidores.
 
     - AWS Global Accelerator
         Mejora el tráfico de red usando IP públicas. Usado principalmente para comunicación de red, UDP, MQTT o VoIP
@@ -242,6 +254,7 @@ Servicios AWS
         Para hacer una política genérica usaremos Variables de la política IAM.
         Las políticas de confianza definen qué entidades principales (cuentas, usuarios, roles y usuarios federados) pueden asumir el rol.
         Desde la cuenta que se quiere dar acceso, se crea una política de confianza para la cuenta externa y una política de acceso para el recurso, y la cuenta externa referencia la política de acceso.
+        No se puede conceder acceso con una misma política a distintas particiones.
         AWS IAM Access Analyzer le ayuda a identificar los recursos de su organización y cuentas, como buckets de Amazon S3 o roles de IAM, que se comparten con una entidad externa.
         Access Advisor identifica roles no usados para su posterior eliminicación.
 
@@ -257,6 +270,8 @@ Servicios AWS
         KMS almacena la CMK, y recibe datos de los clientes, que cifra y devuelve.
         Máximo 4kb para cifrar por api, para mayor tamaño, hay que usar el SDK.
         Permite la rotación automática de claves.
+        Método GenerateDataKey genera una clave única para cifrar de lado del cliente.
+        Método GenerateDataKeyWithoutPlaintext para cifrar en otro momento.
         - SSE-C Cifrado del lado del servidor. Claves proporcionadas por el cliente.
         - SSE-S3. Cifrado del lado del servidor. Claves administradas por Amazon con rotación automática. Usa AES256
         - SSE-KMS. Similar a SSE-S3 y permite gestionar las claves. Proporciona auditoría.
@@ -274,7 +289,7 @@ Servicios AWS
         Autorizador Lambda es una función de Lambda que permite controlar el acceso al API usando autenticación OAuth o SAML (token de portador).
         Lambda actualmente solo soporta imágenes de contenedor basadas en Linux (Para ECR y ECS).
         Puede desplegar la función Lambda como imagen de contenedor con un tamaño máximo de 10 GB.
-        Las variables de entorno no pueden superar los 4kb.
+        Las variables de entorno no pueden superar los 4kb en total. Sin límite en el número de variables.
         
     - AWS Marketplace
         Tienda online de software
@@ -334,6 +349,8 @@ Servicios AWS
         Almacen infinito de mensajes en la cola. Los consumidos (mensajes en vuelo o inflight) tienen un máximo de 120.000 y se deben eliminar una vez procesados.
         Las etiquetas de las colas distinguen mayúsculas.
         Existe la delay queue que permite retrasar la entrega de los mensajes a los consumidores.
+        Dispone de un cliente de SQS ampliado que permite hasta 2GB de tamaño.
+        Existe el sondeo corto y largo. Con el corto no se espera a enviar un mensaje, con el largo si o hasta que pase 20 segundos como máximo. Más económico.
         - API
             DeleteQueue para borrar una cola y su contenido. 
             PurgeQueue purga el contenido de una cola.
@@ -344,11 +361,16 @@ Servicios AWS
     - AWS SSM Parameter Store (Systems Manager Parameter Store)
         Utiliza AWS KMS para los secure strings. 
         Almacena pares de clave valor para usar en las aplicaciones de AWS.
+        No permite usar políticas basadas en recursos para los parámetros.
     
     - AWS Step Functions.
-        Una unidad de trabajo es un Task realizado en una máquina de estados que es en lo que se basa este servicio. Para tareas de tipo Task, resource es obligatorio. Tipo Pass es para no hacer nada. Tipo Fail para redirigir errores. Para fallar controladamente se puede definir un catch.
+        Una unidad de trabajo es un Task realizado en una máquina de estados que es en lo que se basa este servicio. Para tareas de tipo Task, resource es obligatorio. 
+        Tipo Pass es para no hacer nada. 
+        Tipo Fail para redirigir errores. Para fallar controladamente se puede definir un catch.
         Existen distinto estados del flujo, Task (indicar Resource), Choice (para condionales, indicar mínimo una), Parallel para proceso en paralelo (división por ramas, obligatorio Branches), Map para ejecutar un conjunto de steps para cada elemento del map de forma paralela. Pass para transformar información, el input es el output (útil para debug), Wait detiene la ejecución el tiempo indicado, ya sea relativo a ahora o una fecha en concreto.
         Succeed para terminar una ejecución de forma correcta. Fail termina la ejecución como fallida a no ser que usemos un Catch para el error.
+        Una activity puede ser parte de una máquina de estados.
+        Express workers para trabajos cortos y mucha carga. Duración máxima de 5 minutos, el standard 1 año. Express no soporta activities, .sync y callback.
 
     - AWS Systems Manager
         Proporciona visibilidad y control de su infrastuctura en AWS.
@@ -385,4 +407,5 @@ Servicios AWS
         Es necesario configurar un rol para que los recursos puedan usar este servicio.
         Permite asumir un rol para publicar las trazas en un cuenta de AWS concreta.
         Las reglas de muestreo indican al SDK de X-Ray cuántas peticiones debe registrar para un conjunto de criterios.
+        El daemon escucha en el puerto UDP 2000.
     
