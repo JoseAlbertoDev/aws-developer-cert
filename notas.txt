@@ -1,6 +1,6 @@
 consultar FAQs servicios AWS
 
-Continuar pregunta 41
+Continuar pregunta 61
 
 Servicios AWS
     - AWS API Gateway
@@ -109,7 +109,8 @@ Servicios AWS
         Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
         Usa el fichero appspec.yml que se situa en la raíz del proyecto.
         Soporta hooks y se ejecutan una sola vez por despliegue, ValidateService es el último hook del despliegue.
-        Despliegue de Blue-Green
+        Despliegue de Blue-Green.
+        El agente de CodeDeploy archiva las revisiones y los logs de las instancias (permite configurar cuantas almacenar).
 
     - AWS CodePipeline
         Automatiza las fases de compilación, test y despliegue del proceso de publicación cada vez que se produce un cambio en el código.
@@ -147,6 +148,7 @@ Servicios AWS
         UpdateItem, aparte del update, si no existe el elemento, lo crea.
         Las copias de seguridad, bajo demanda o recuperación puntual, se escriben en S3, pero se tienen acceso a esos buckets.
         Una unidad de capacidad de lectura equivale a una lectura consistente por segundo o bien a dos lecturas eventualmente consistente para elementos de hasta 4kb.
+        Una partición "caliente" puede recibir un mayor volumen de tráfico de lectura y escritura en comparación con otras particiones.
 
     - AWS EBS
         Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
@@ -175,6 +177,7 @@ Servicios AWS
         El script de inicio con datos del usuario solo se ejecuta cuando una instancia se lanza por primera vez (se puede cambiar). Este script se ejectura con permisos de root (de ahí que haya que cambiar los permisos de ejecución luego de lo que creemos)
         Las instancias de tipo Burstable T2 es gratuita para cuentas nuevas durante 12 meses.
         El uso medio de RAM es una métrica personalizada.
+        aws ec2 monitor-instances --instance-ids i-1234567890abcdef0 habilita la monitorización detallada para una instancia en ejecución.
         - AutoScaling Group (ASG)
             Los Auto Scaling Groups no pueden abarcar varias regiones.
             Un grupo de Auto Scaling puede contener instancias EC2 en una o varias zonas de disponibilidad dentro de la misma región.
@@ -208,6 +211,7 @@ Servicios AWS
         Usa la carpeta .ebextensions/ para configurar recursos a provisionar. Con extensión .config .ebextension/{nombre-recurso-aws}.config
         Utiliza instancias EC2 para el despliegue.
         No soporta SSM Parameter para las configuraciones.
+        Dispone de varios tipos de entorno según el trabajo que se vaya a desempeñar.
         - Desplieges
             - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado. La más segura.
             - División de tráfico: Lanza un conjunto completo de neuvas instancias y luego envía un procentaje de peticiones durante un periodo para evaluar.
@@ -217,6 +221,10 @@ Servicios AWS
             - All-at-Once (todo a la vez): Todas las instancias se actualizan a la vez. No provoca pérdida de saldos de ráfagas.
             - Canary: Se redirige un porcentaje del tráfico a las nuevas instancias para ver su funcionamiento. No provoca pérdida de ráfagas.
             - Blue/Green:
+    
+    - AWS Elastic Cache
+        Permite mejorar el rendimiento de las lecturas o de carga de trabajo que se apoyen en lecturas.
+        Lo mejor para datos que no necesiten transformaciones.
 
     - AWS ELB
         - ALB. 
@@ -303,6 +311,8 @@ Servicios AWS
         La replicación de actualización en Multi-AZ se hacen de forma síncrona contra los secundarios.
         Admite autoescalado de almacenamiento.
         Si no está la Multi-AZ activa, Amazon RDS utiliza la funcionalidad de replicación integrada del motor de base de datos PostgreSQL para crear instancias de lecturas.
+        Las copias de seguridad automatizadas se limitan a una única región de AWS, mientras que las Snapshots manuales y las réplicas de lectura se soportan en varias regiones.
+        La clonación de bases de datos sólo está disponible para Aurora y no para RDS.
     
     - AWS Route 53
         Registro CNAME para generar un DNS para otro endpoint ya expuesto.
@@ -378,7 +388,7 @@ Servicios AWS
     - AWS S3:
         Para acceder a recursos desde otro dominio es necesario configurar CORS. 
         Para fichero mayores de 100 MB se recomienda usar carga multiparte. También existe S3 Transfer Acceleration que se apoya en CloudFront y EdgeLocations para enviar el tráfico a S3.
-        Los roles IAM y las políticas basadas en recursos delegan el acceso entre cuentas sólo dentro de una única partición. (región nort-us, partación aws y región china-1 pero partición aws-cn)
+        Los roles IAM y las políticas basadas en recursos delegan el acceso entre cuentas sólo dentro de una única partición. (región nort-us, partición aws y región china-1 pero partición aws-cn)
         Para cifrar un PutObject con SSE-S3 la cabecera x-amz-server-side-encryption (s3:x-amz-server-side-encryption) contendrá el valor AES256. 
         Para cifrar con SSE-KMS, usaremos el valor aws:kms
         Para cifrar usando una CMK usaremos la cabecera s3:x-amz-server-side-encryption-aws-kms-key-id
@@ -387,6 +397,14 @@ Servicios AWS
         S3 Analytics para ver que clase de almacenamiento será el más adecuando según el acceso a un fichero.
         S3 Access Logs permite dejar una traza de acceso a S3.
         Permite compartir objetos privados crean una URL prefirmada y será válida durante un tiempo concreto.
+        kms:GenerateDataKey es un permiso necesario para que S3 cifre los objetos.
+        Las acciones del ciclo de vida de S3 no se replican con la replicación de S3.
+        Existe la replicación en la misma región o entre varias. Y permite configurarse a varios niveles.
+        Los clientes pueden utilizar cuatro mecanismos para controlar el acceso a los recursos de Amazon S3: 
+            Las políticas de Identity and Access Management (IAM) 
+            Las políticas de bucket 
+            Las listas de control de acceso (ACL)
+            La autenticación de cadenas de consulta (Query String Authentication).
 
     - AWS Trusted Advisor
         Es un servicio que inspeccion nuestro entorno y hace recomendaciones para ahorrar dinero, mejorar el rendimiento o cerrar brechas de seguridad.
