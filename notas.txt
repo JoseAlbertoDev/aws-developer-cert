@@ -269,8 +269,10 @@ Servicios AWS
     - AWS Kinesis
         - Kinesis Data Streams. Recopila y procesa stremas de registros en tiempo real y los almacena desde 24 horas hasta 1 año.
         - Kinesis Data Firehouse. Para cargar datos de streams en S3, Redshift, ElasticSearch (ES) y Splunk. Por norma general, Data Streams interesa más.
+        - Kinesis Data Analytics. Permite analizar datos de streaming en tiempo real. Se utiliza para crear consultas SQL y sofisticadas aplicaciones Java
         Método del API para escribir registros, API PutRecords, hasta 500 en una sola llamada. Cada registro puede ser de hasta 1 MB, con un máximo de 5 MB para la petición completa.
         Cada fragmento soporta escrituras de hasta 1.000 registros por segundo con 1 MB de escritura como máximo.
+        Data streams permite configurar hasta cuando se puede acceder a unos registros (desde 24h a 365 días.)
         
     - AWS KMS
         Servicio para administrar claves de cifrado. Combina hardware y software seguro y de alta disponibilidad.
@@ -396,6 +398,7 @@ Servicios AWS
         S3 Object Lock le permite almacenar objetos utilizando un modelo "Write Once Read Many"
         S3 Analytics para ver que clase de almacenamiento será el más adecuando según el acceso a un fichero.
         S3 Access Logs permite dejar una traza de acceso a S3.
+        S3 Object Ownership es una configuración de bucket de Amazon S3 que puede utilizar para controlar la propiedad de los nuevos objetos que se cargan en sus buckets.
         Permite compartir objetos privados crean una URL prefirmada y será válida durante un tiempo concreto.
         kms:GenerateDataKey es un permiso necesario para que S3 cifre los objetos.
         Las acciones del ciclo de vida de S3 no se replican con la replicación de S3.
