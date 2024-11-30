@@ -44,6 +44,10 @@ Servicios AWS
         Al sintetizar el código, generamos una plantilla de CloudFormation. Con cdk deploy implementamos la plantilla que hemos generado de CloudFormation.
         Permite usar CONSTRUCTORS, que son partes de infrastructura predefinida por AWS con valores por defecto.
      
+    - AWS CLI
+        --page-size Limita la cantidad de peticiones que se harán por detrás de una llamada a AWS.
+        --max-items Limita la cantidad de registros que se devolveran en una llamada.
+
     - AWS CloudFront
         Servir contenido estático y dinámico con varios orígenes (como S3). 
         Usa Edge Locations para acercar el contenido. 
@@ -109,6 +113,7 @@ Servicios AWS
         Permite acceder a repositorios externos usando credenciales GIT dentro de CodeCommit, por ejemplo clonar un repositorio externo usando HTTPs.
         Los token de acceso personal son específicos para usar junto con el API de GitHub o la linea de comandos, no sirven para AWS CodeCommit.
         No podemos usar usuario y contraseña de IAM para acceder a CodeCommit. Usar credenciales GIT o claves SSH, claves de acceso de AWS (CLI).
+        Los repositorios se cifran en tránsito y en reposo de forma automática.
     
     - AWS CodeDeploy
         Permite varias formas de desplegar.
@@ -118,7 +123,7 @@ Servicios AWS
         Permite integración con AWS EC2, Fargate, Lambda y servidores propios on-premise.
         Usa el fichero appspec.yml que se situa en la raíz del proyecto.
         Soporta hooks y se ejecutan una sola vez por despliegue, ValidateService es el último hook del despliegue.
-        Despliegue de Blue-Green.
+        Orden de los hooks - Stop, Download, BeforeIns, Install, AfterIns, AppStart, Validate, BeforeBlockTraffic, BlockTraffic, AfterBlockTr, BeforeAllowT, AllowT, AfterAllowT
         El agente de CodeDeploy archiva las revisiones y los logs de las instancias (permite configurar cuantas almacenar).
         CodeDeploy Rolling back para revertir un despliegue fallido.
 
@@ -157,10 +162,17 @@ Servicios AWS
         Tamaño máximo para un elemento de 400kb.
         Podemos usar el método TransactWriteItems (max 25 ops y 4MB),TransactGetItems del API para realizar transaccions.
         UpdateItem, aparte del update, si no existe el elemento, lo crea.
-        Las copias de seguridad, bajo demanda o recuperación puntual, se escriben en S3, pero se tienen acceso a esos buckets.
+        Las copias de seguridad, bajo demanda o recuperación puntual, se escriben en S3, pero no se tiene acceso a esos buckets.
         Una unidad de capacidad de lectura equivale a una lectura consistente por segundo o bien a dos lecturas eventualmente consistente para elementos de hasta 4kb.
+        Una unidad de capacidad de lectura representa dos lecturas eventualmente consistentes por segundo, para un elemento de hasta 4 KB de tamaño. Esto significa que para un elemento de 12 KB de tamaño, necesitamos 3 RCU (12 KB / 4 KB) para dos lecturas consistentes por segundo. Como necesitamos 16 lecturas eventualmente consistentes por segundo, necesitamos 3 * (16 / 2) = 24 RCU.
         Una partición "caliente" puede recibir un mayor volumen de tráfico de lectura y escritura en comparación con otras particiones.
         Para la operación Scan podemos usar Escaneado en paralelo ya que las tablas con Scan se procesan de forma secuencial en incrementos de 1 MB.
+        LSI o Índice Secundario Local.
+            Permite crear varios índices que deben de ser compuestos (clave de partición y ordenación). 
+            La clave de partición será la original de la tabla.
+            No se pueden crear una vez generada la tabla.
+        GSI o Índice Secundario Global permite crear un índice de clave de partición (simple) o partición y ordenación (compuesta).
+            Se puede crear una vez creada la tabla.
 
     - AWS EBS
         Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
@@ -237,6 +249,10 @@ Servicios AWS
     - AWS Elastic Cache
         Permite mejorar el rendimiento de las lecturas o de carga de trabajo que se apoyen en lecturas.
         Lo mejor para datos que no necesiten transformaciones.
+        Permite ser usado para mantener las sesiones de los usuarios.
+        Todos los nodos de un cluter Redis deben de estar en la misma región.
+        Con el cluster activado, no se puede promover manualmente de réplica a primario.
+        La replicación es siempre asíncrona.
 
     - AWS ELB
         - ALB. 
@@ -255,6 +271,7 @@ Servicios AWS
         Permise separar el tráfico público del privado.
         Un ELB solo puede apuntar a instancias EC2 dentro de una región.
         Agrega la cabecera X-Forwarded-For con la ip del origen.
+        Permite enrutar por ruta (dominio/ruta) o por host (subdominioA.host, subdominioB.host)
       
     - AWS EventBridge (CloudWatch Events anteriormente)
         Ofrece un stream casi en tiempo real de eventos del sistema. 
@@ -304,8 +321,8 @@ Servicios AWS
         Método GenerateDataKey genera una clave única para cifrar de lado del cliente.
         Método GenerateDataKeyWithoutPlaintext para cifrar en otro momento.
         - SSE-C Cifrado del lado del servidor. Claves proporcionadas por el cliente. Rechaza peticiones HTTP (no seguras).
-        - SSE-S3. Cifrado del lado del servidor. Claves administradas por Amazon con rotación automática. Usa AES256
-        - SSE-KMS. Similar a SSE-S3 y permite gestionar las claves. Proporciona auditoría.
+        - SSE-S3. Cifrado del lado del servidor. Claves administradas por Amazon con rotación automática. Usa AES256 'x-amz-server-side-encryption': 'AES256'
+        - SSE-KMS. Similar a SSE-S3 y permite gestionar las claves. Proporciona auditoría. 'x-amz-server-side-encryption': 'aws:kms'
         - CMKs. Clave maestra del cliente administradas en KMS. Pueden ser simétricas y asimétricas.
 
     - AWS Lambda
@@ -319,7 +336,7 @@ Servicios AWS
         Un alias no puede apuntar a otro.
         Autorizador Lambda es una función de Lambda que permite controlar el acceso al API usando autenticación OAuth o SAML (token de portador).
         Lambda actualmente solo soporta imágenes de contenedor basadas en Linux (Para ECR y ECS).
-        Puede desplegar la función Lambda como imagen de contenedor con un tamaño máximo de 10 GB.
+        Puede desplegar la función Lambda como imagen de contenedor con un tamaño máximo de 10 GB de consumo de RAM.
         Las variables de entorno no pueden superar los 4kb en total. Sin límite en el número de variables.
         
     - AWS Marketplace
@@ -388,7 +405,7 @@ Servicios AWS
             DeleteQueue para borrar una cola y su contenido. 
             PurgeQueue purga el contenido de una cola.
             CreateQueue. Cuando se crea una cola, no se puede cambiar el nombre. El tiempo por defecto de espera de visibilidad es de 30 segundos.
-            DelaySeconds configura cuanto se retrasa la entrege de todos los mensajes.
+            DelaySeconds configura cuanto se retrasa la entrege de todos los mensajes. Máximo 15 minutos.
             MessageRetentionPeriod configura cuanto tiempo SQS tiene un mensaje.
             
     - AWS SSM Parameter Store (Systems Manager Parameter Store)
