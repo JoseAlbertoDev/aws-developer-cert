@@ -19,6 +19,7 @@ Servicios AWS
         No soporta STS como autenticación.
         Exiten autorizadores del tipo COGNITO_USER_POOLS.
         Podemos pasar una etapa a otra actualizando la variable de etapa o desplegando en el entorno siguiente.
+        Para invocar una función Lambda desde el API, es necesario agregar el permiso a Lambda o un rol que asumir en API Gateway.
 
     - AWS Athena
         Es un servicio de consulta que facilita el análisis de datos en Amzaon S3 mediante SQL estándar.
@@ -47,6 +48,7 @@ Servicios AWS
     - AWS CLI
         --page-size Limita la cantidad de peticiones que se harán por detrás de una llamada a AWS.
         --max-items Limita la cantidad de registros que se devolveran en una llamada.
+        --starting-token Para continuar peticiones de paginación usando el NextToken.
 
     - AWS CloudFront
         Servir contenido estático y dinámico con varios orígenes (como S3). 
@@ -71,7 +73,8 @@ Servicios AWS
         Los valores de salida exportados en CloudFormation deben tener nombres únicos dentro de una única región.
         Se puede configurar los valores permitidos usando AllowedValues.
         Export para exponer parámetros de salida.
-        Importamos con FN::ImportValue
+        Importamos valores exportados de otro stack con FN::ImportValue
+        Podemos escribir inline el código de una function Lambda siempre que no tenga dependencias en una plantilla o referenciar un bucket S3 que contegna todo.
 
         CloudFormation soporta los siguientes tipos de parámetros:
             - String – Una cadena literal
@@ -95,15 +98,19 @@ Servicios AWS
         - AWS CloudWatch Logs Insights. Permite buscar y analizar logs en CloudWatch Logs.
         - AWS CloudWatch Events. Es Amazon EventBridge
         Permite la ingesta de métricas personalizadas. Cada métrica puede ser de Resolución estandar (granularidad de un minuto) o de Alta resolución (granularidad de un segundo). Los servicios de AWS usan la estandar por defecto.
-        Las de alta resolución se pueden leer y recuperar cada 1, 5, 10, 30 segundos o en múltiplos de 60 segundos. La creación de un métrica personalizada se ahce con el método del API PutMetricData. Las alarmas se puede crear por métrica o compuestas.
+        Las de alta resolución se pueden leer y recuperar cada 1, 5, 10, 30 segundos o en múltiplos de 60 segundos. 
+        La creación de un métrica personalizada se hace con el método del API PutMetricData. 
+        Las alarmas se puede crear por métrica o compuestas.
         Existen dos tipos de monitorización, básica (publicación cada 5 minutos) y detallada (publicación cada minuto).
         Permite integración con S3, entre otros servicios.
         Para cifrar un grupo de logs setearemos associate-kms-key a un ARN de clave de KMS.
+        Existe el agente de CloudWatch que permite enviar logs de los servidores locales.
         
     - AWS CodeBuild
         Es un servicio de integración continua totalmente administrado que compila código fuente, ejecuta pruebas y produce paquetes de software listos para implementarse. 
         Escala de forma automática, gestionado por AWS.
-        Compilación usando el fichero buildspec.yml. Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
+        Compilación usando el fichero buildspec.yml. 
+        Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
         Los elementos de la cola para compilación tienen un tiempo de vida de 8 horas por defecto, si no se ejectura, se eliminará.
         Permite almacenar las dependencias en caché (en S3).
         Permite integración con S3 y CloudWatch Logs.
@@ -130,11 +137,17 @@ Servicios AWS
     - AWS CodePipeline
         Automatiza las fases de compilación, test y despliegue del proceso de publicación cada vez que se produce un cambio en el código.
         Permite reaccionar a cambios en un objeto de un bucket.
+        La consola no permite configurar triggers de eventos, para eso usar CloudWatch Events (EvenBridge)
+
+    - AWS CodeStar
+        Permite configurar toda su cadena de herramientas de entrega continua en cuestión de minutos.
+        Es un conglomerado del resto de herramientas de CI/CD.
 
     - AWS Cognito User Pools
         Con una correcta autenticación, se devuelve un token JWT siguiendo el estandar OIDC. Maneja la autenticación.
         Amazon Cognito proporciona autenticación, autorización y gestión de usuarios para sus aplicaciones web y móviles. 
         Usa nombre de usuario y una contraseña, o a través de terceros como Facebook, Amazon, Google o Apple.
+        Permite configurar pre/post authetication e invocar otros servicios.
 
     - AWS Cognito Identity Pools
         Sin token. Para proporcionar acceso a servicios  de AWS.
@@ -150,7 +163,7 @@ Servicios AWS
         Permite la sincronización de datos de perfil de usuario entre dispositivos móviles y web sin usar un backend propio.
     
     - AWS DynamoDB
-        No soporta los endpoints de interfaz de VPC.
+        No soporta los endpoints de interfaz de VPC, si de Gateway.
         DynamoDB es una base de datos NoSQL de valores clave, sin servidor y totalmente gestionada, diseñada para ejecutar aplicaciones de alto rendimiento a cualquier escala.
         La recuperación puntual (PITR) ayuda a proteger las tablas de DynamoDB de operaciones accidentales de escritura o eliminación. PITR proporciona copias de seguridad continuas de los datos de su tabla DynamoDB, y puede restaurar esa tabla a cualquier punto en el tiempo hasta el segundo durante los 35 días anteriores.
         Al crear una tabla DynamoDB, además del nombre de la tabla, debe especificar la clave principal de la tabla.
@@ -171,8 +184,13 @@ Servicios AWS
             Permite crear varios índices que deben de ser compuestos (clave de partición y ordenación). 
             La clave de partición será la original de la tabla.
             No se pueden crear una vez generada la tabla.
+            Utiliza las RCU y WRU de la tabla principal.
         GSI o Índice Secundario Global permite crear un índice de clave de partición (simple) o partición y ordenación (compuesta).
             Se puede crear una vez creada la tabla.
+            Permite configurar RCU y WRU distintos que la tabla principal.
+        Opciones de la CLI
+            --projection-expression para seleccionar solo algunas columnas.
+            --filter-expression para seleccionar solo algunos registros en función de una condición.
 
     - AWS EBS
         Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
@@ -190,6 +208,7 @@ Servicios AWS
         Configuración de propiedades del Cluster mediante el fichero /etc/ecs/ecs.config, sobre todo si queremos registrar un cluster con un nombre diferencia al ya existente.
         Es un servicio de administración de contenedores docker en un Cluster. 
         Permite lanzar las instancias usando EC2 o Fargate que administrará los recursos necesarios.
+        Con Fargate no tenemos acceso a las instancias. Reconmendable usar contenedores sidecar si queremos extener la funcionalidad (por ejemplo, agente de X-Ray)
         Si se finaliza una instancia de contenedor en estado STOPPED se produce un problema de sincronización y puede seguir apareciendo listada. Para darla de baja correctamente, será necesario hacerlo por la consola de ECS o por linea de comandos.
         AWS recomienda utilizar políticas de escalado de seguimiento de objetivos.
     
@@ -201,6 +220,7 @@ Servicios AWS
         El script de inicio con datos del usuario solo se ejecuta cuando una instancia se lanza por primera vez (se puede cambiar). Este script se ejectura con permisos de root (de ahí que haya que cambiar los permisos de ejecución luego de lo que creemos)
         Las instancias de tipo Burstable T2 es gratuita para cuentas nuevas durante 12 meses.
         El uso medio de RAM es una métrica personalizada.
+        Metadatos en http://169.254.169.254/latest/meta-data
         aws ec2 monitor-instances --instance-ids i-1234567890abcdef0 habilita la monitorización detallada para una instancia en ejecución.
         - AutoScaling Group (ASG)
             Los Auto Scaling Groups no pueden abarcar varias regiones.
@@ -235,10 +255,13 @@ Servicios AWS
         Usa la carpeta .ebextensions/ para configurar recursos a provisionar. Con extensión .config .ebextension/{nombre-recurso-aws}.config
         Utiliza instancias EC2 para el despliegue.
         No soporta SSM Parameter para las configuraciones.
-        Dispone de varios tipos de entorno según el trabajo que se vaya a desempeñar.
+        Podemos usar plataformas de contenedores múltiples o únicos.
+        Dispone de varios tipos de entorno según el trabajo que se vaya a desempeñar. Worker o de Servidor Web. Worker usa SQS para ejecutar las tareas.
+        En un entorno Worker, podemos definir el fichero cron.yaml para programar trabajos.
+        Permite configurar una política de ciclo de vida para las versiones.
         - Desplieges
             - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado. La más segura.
-            - División de tráfico: Lanza un conjunto completo de neuvas instancias y luego envía un procentaje de peticiones durante un periodo para evaluar.
+            - División de tráfico: Lanza un conjunto completo de neuvas instancias y luego envía un procentaje de peticiones durante un periodo para evaluar. Más caro que rolling.
             - Rolling o continuo: 
                 - Estandar: El número de lotes es la cantidad de instancias dividadas por n y se van actualizando por lotes.
                 - Por lotes: Igual que la estandar pero genera costes adicionales ya que crea un nuevo lote para garantizar la disponibilidad y estas máquinas extras se pagan. Para revertir en caso de fallo, se debe de hacer manual.
@@ -253,6 +276,7 @@ Servicios AWS
         Todos los nodos de un cluter Redis deben de estar en la misma región.
         Con el cluster activado, no se puede promover manualmente de réplica a primario.
         La replicación es siempre asíncrona.
+        Permite hacer uso de la estrategia Write-through que actualiza la caché en escrituras.
 
     - AWS ELB
         - ALB. 
@@ -311,6 +335,7 @@ Servicios AWS
         Cada fragmento soporta escrituras de hasta 1.000 registros por segundo con 1 MB de escritura como máximo.
         Data streams permite configurar hasta cuando se puede acceder a unos registros (desde 24h a 365 días.)
         Kinesis Producer Library está pensada para integrarse en el código.
+        KCL permite tener como máximo una instancia EC2 por shard en Kinesis para la aplicación dada.
         
     - AWS KMS
         Servicio para administrar claves de cifrado. Combina hardware y software seguro y de alta disponibilidad.
@@ -338,7 +363,13 @@ Servicios AWS
         Lambda actualmente solo soporta imágenes de contenedor basadas en Linux (Para ECR y ECS).
         Puede desplegar la función Lambda como imagen de contenedor con un tamaño máximo de 10 GB de consumo de RAM.
         Las variables de entorno no pueden superar los 4kb en total. Sin límite en el número de variables.
-        
+        Dispone del directorio /tmp para almacenamiento temporal (512MB)
+        Poner la función y las dependencias en una carpeta y comprimirlas junta para desplegarlas en Lambda, si pesa más de 50 MB, usar S3.
+        Soporta un tiempo máximo de ejecución de 15 minutos.
+
+    - AWS Macie
+        Es un servicio de seguridad de datos que descubre datos confidenciales mediante Machine Learning y concordancia de patrones en los buckets S3.
+
     - AWS Marketplace
         Tienda online de software
     
@@ -401,6 +432,8 @@ Servicios AWS
         Existe la delay queue que permite retrasar la entrega de los mensajes a los consumidores.
         Dispone de un cliente de SQS ampliado que permite hasta 2GB de tamaño.
         Existe el sondeo corto y largo. Con el corto no se espera a enviar un mensaje, con el largo si o hasta que pase 20 segundos como máximo. Más económico.
+        MessageDeduplicationId para asegurarse de que no se envíen mensajes duplicados a SQS.
+        MessageGroupId permite procesar los mensajes en un orden concreto.
         - API
             DeleteQueue para borrar una cola y su contenido. 
             PurgeQueue purga el contenido de una cola.
@@ -437,6 +470,7 @@ Servicios AWS
         S3 Analytics para ver que clase de almacenamiento será el más adecuando según el acceso a un fichero.
         S3 Access Logs permite dejar una traza de acceso a S3.
         S3 Object Ownership es una configuración de bucket de Amazon S3 que puede utilizar para controlar la propiedad de los nuevos objetos que se cargan en sus buckets.
+        S3 Select permite a las aplicaciones recuperar sólo un subconjunto de datos de un objeto mediante el uso de expresiones SQL simples (.csv, ...).
         Si el propietario del bucket no es el del objeto, no se tiene acceso a los logs de acceso.
         Permite compartir objetos privados crean una URL prefirmada y será válida durante un tiempo concreto.
         kms:GenerateDataKey es un permiso necesario para que S3 cifre los objetos.
@@ -464,9 +498,11 @@ Servicios AWS
 
     - AWS X-Ray
         Es un servicio que ayuda a analizar y depurar aplicaciones distribuidas. 
-        Proporciona una vista de extremoa a extremo de las peticiones.
+        Proporciona una vista de extremo a extremo de las peticiones.
         Es necesario configurar un rol para que los recursos puedan usar este servicio.
         Permite asumir un rol para publicar las trazas en un cuenta de AWS concreta.
         Las reglas de muestreo indican al SDK de X-Ray cuántas peticiones debe registrar para un conjunto de criterios.
         El daemon escucha en el puerto UDP 2000.
+        Podemos usar las anotaciones para indexar las trazar y poder realizar búsquedas sobre estas.
+        AWS_XRAY_DAEMON_ADDRESS para garantizar que el demonio se detecta correctamente en ECS.
     
