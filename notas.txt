@@ -58,7 +58,11 @@ Servicios AWS
         Como root, solo se pueden tener hasta dos pares de claves de CloudFront por cuenta AWS y solo se pueden crear con la cuenta root.
         Permite el cifrado a nivel de campo (formulario HTTPs).
         No existen planes de uso de CloudFront
-        Permite la conmutación por error de origen (si falla uno, cambiar el tráfico a otro)
+        Permite la conmutación por error de origen (si falla uno, cambiar el tráfico a otro).
+        Una petición siempre se envía al origen primario y solo va al secundario en caso de que falle.
+        Solo un origen se puede marcar como el principal para alta disponibilidad.
+        Solo conmuta peticiones HTTP por error si son métodos GET, HEAD u OPTIONS.
+        Podemos usar CloudFront Functions o Lambda@Edge para modificar la petición de forma programática (funciona como un Filter). Usa peticiones de espectador.
 
     - AWS CloudFormation
         - AWS Stacks Sets permite crear, actualizar y eliminar stacks en varias cuentas y regiones con una sola operación.  create-stack-set
@@ -115,6 +119,7 @@ Servicios AWS
         Permite almacenar las dependencias en caché (en S3).
         Permite integración con S3 y CloudWatch Logs.
         Usa el fichero buildspec.yml.
+        Permite ejecutar el agente CodeBuild de forma local.
 
     - AWS CodeCommit
         Permite acceder a repositorios externos usando credenciales GIT dentro de CodeCommit, por ejemplo clonar un repositorio externo usando HTTPs.
@@ -178,8 +183,11 @@ Servicios AWS
         Las copias de seguridad, bajo demanda o recuperación puntual, se escriben en S3, pero no se tiene acceso a esos buckets.
         Una unidad de capacidad de lectura equivale a una lectura consistente por segundo o bien a dos lecturas eventualmente consistente para elementos de hasta 4kb.
         Una unidad de capacidad de lectura representa dos lecturas eventualmente consistentes por segundo, para un elemento de hasta 4 KB de tamaño. Esto significa que para un elemento de 12 KB de tamaño, necesitamos 3 RCU (12 KB / 4 KB) para dos lecturas consistentes por segundo. Como necesitamos 16 lecturas eventualmente consistentes por segundo, necesitamos 3 * (16 / 2) = 24 RCU.
+        Tamaño de los elementos para lectura 4kb, para escritura 1kb.
         Una partición "caliente" puede recibir un mayor volumen de tráfico de lectura y escritura en comparación con otras particiones.
+        La ubicación (partición) de cada elemento viene determinada por el valor hash de su clave de partición.
         Para la operación Scan podemos usar Escaneado en paralelo ya que las tablas con Scan se procesan de forma secuencial en incrementos de 1 MB.
+        Permite crear tablas globales para ser accedida por usuarios de todo el mundo pudiendo elegir en que regiones estará disponible.
         LSI o Índice Secundario Local.
             Permite crear varios índices que deben de ser compuestos (clave de partición y ordenación). 
             La clave de partición será la original de la tabla.
@@ -211,6 +219,7 @@ Servicios AWS
         Con Fargate no tenemos acceso a las instancias. Reconmendable usar contenedores sidecar si queremos extener la funcionalidad (por ejemplo, agente de X-Ray)
         Si se finaliza una instancia de contenedor en estado STOPPED se produce un problema de sincronización y puede seguir apareciendo listada. Para darla de baja correctamente, será necesario hacerlo por la consola de ECS o por linea de comandos.
         AWS recomienda utilizar políticas de escalado de seguimiento de objetivos.
+        Permite configurar el controlador awslogs para enviar logs a CloudWatch usando el parámetro logConfiguration en la definición de la tarea.
     
     - AWS EC2
         - NACL: NACLs are stateless, which means that information about previously sent or received traffic is not saved. If, for example, you create a NACL rule to allow specific inbound traffic to a subnet, responses to that traffic are not automatically allowed. Puertos 1024 - 65535
@@ -259,6 +268,7 @@ Servicios AWS
         Dispone de varios tipos de entorno según el trabajo que se vaya a desempeñar. Worker o de Servidor Web. Worker usa SQS para ejecutar las tareas.
         En un entorno Worker, podemos definir el fichero cron.yaml para programar trabajos.
         Permite configurar una política de ciclo de vida para las versiones.
+        Podemos exportar una configuración a un S3 o local, es una plantilla .yml. Luego podemos crear un entorno usando la opción Configuraciones guardadas.
         - Desplieges
             - Inmutable: Lanza un conjunto completo de nuevas instancias en un ASG separado. La más segura.
             - División de tráfico: Lanza un conjunto completo de neuvas instancias y luego envía un procentaje de peticiones durante un periodo para evaluar. Más caro que rolling.
@@ -354,6 +364,7 @@ Servicios AWS
         Lambda@Edge es para acercar la computación al usuario, más proceso que servir datos. 
         Para aumentar la capacidad de procesamiento, se incrementa la RAM.
         Establezca un valor para la memoria de entre 128 MB y 10.240 MB en incrementos de 1 MB a 1.769 MB.
+        La concurrencia sin reservar se comparte a nivel de región.
         Existe la concurrencia reservada y provisionada. 
             La reservada indica el número máximo de instancias que se ejecutan de una función. 
             La provisionada tiene siempre lista N instancias para responder a las necesidades de carga.
@@ -434,6 +445,7 @@ Servicios AWS
         Existe el sondeo corto y largo. Con el corto no se espera a enviar un mensaje, con el largo si o hasta que pase 20 segundos como máximo. Más económico.
         MessageDeduplicationId para asegurarse de que no se envíen mensajes duplicados a SQS.
         MessageGroupId permite procesar los mensajes en un orden concreto.
+        El periodo de retención por defecto es de 4 días. Mínimo 60 sec, máximo 14 días.
         - API
             DeleteQueue para borrar una cola y su contenido. 
             PurgeQueue purga el contenido de una cola.
@@ -477,6 +489,8 @@ Servicios AWS
         Las acciones del ciclo de vida de S3 no se replican con la replicación de S3.
         Existe la replicación en la misma región o entre varias. Y permite configurarse a varios niveles.
         Permite emitir eventos a partir de acciones sobre un bucket (soporta como destinos, SNS, SQS no FIFO y Lambda).
+        Ofrecen una consistencia de lectura fuerte.
+        Si se elimina un bucket y se listan todos inmediatamente después, podría seguir apareciendo en el listado de buckets el eliminado.
         Los clientes pueden utilizar cuatro mecanismos para controlar el acceso a los recursos de Amazon S3: 
             Las políticas de Identity and Access Management (IAM) 
             Las políticas de bucket 
