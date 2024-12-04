@@ -214,6 +214,7 @@ Servicios AWS
     - AWS EBS
         Almacenamiento a nivel de bloque, para acceder desde una única instancia EC2.
         Soporta cifrado en vuelo y en reposo usando KMS.
+        El cifrado por defecto es una configuración específica de la región. Si se activa, no se podrá desactivar para volúmenes o snapshots.
         Los volúmenes EBS están bloqueados por AZ.
         Tipos de volúmenes:
             - gp2: Máximo 5.3TiB
@@ -248,6 +249,8 @@ Servicios AWS
             Un grupo de Auto Scaling puede contener instancias EC2 en una o varias zonas de disponibilidad dentro de la misma región.
             ASG solo escalará al máximo configurado.
             Cuando una instancia no está sana, se termina y se crea una nueva.
+            Permite usar plantillas de lanzamiento y configurar el tipo de instancias que se usarán.
+            Es diferente la configuración de lanzamiento (deprecated) y una plantilla de lanzamiento. La plantilla permite una mayor configuración.
         Tipos de instancias:
             - Instancias dedicadas cómo host dedicados pero comparten hardware con otras instancias dedicadas. MAS BARATAS.
             - Host dedicado. Hardware exclusivo, más caro.
@@ -317,7 +320,8 @@ Servicios AWS
         Permise separar el tráfico público del privado.
         Un ELB solo puede apuntar a instancias EC2 dentro de una región.
         Agrega la cabecera X-Forwarded-For con la ip del origen.
-        Permite enrutar por ruta (dominio/ruta) o por host (subdominioA.host, subdominioB.host)
+        Permite enrutar por varios tipos, host-header (host), http-header, http-request-method, path-pattern, query-string y source-ip.
+        Nunca resuelva la IP de un balanceador de carga, ya que puede cambiar con el tiempo, utilizar siempre el nombre DNS.
       
     - AWS EventBridge (CloudWatch Events anteriormente)
         Ofrece un stream casi en tiempo real de eventos del sistema. 
@@ -351,7 +355,11 @@ Servicios AWS
         - Kinesis Data Streams. 
             Recopila y procesa stremas de registros en tiempo real y los almacena desde 24 horas hasta 1 año.
             Kinesis Agent para enviar los logs de las instancias EC2 a KDS (supervisa ficheros).
-        - Kinesis Data Firehouse. Para cargar datos de streams en S3, Redshift, ElasticSearch (ES) y Splunk. Por norma general, Data Streams interesa más.
+            Permite el uso de Enhanced Fanout para aumentar la capacidad de lectura de los subscriptores.
+        - Kinesis Data Firehouse. 
+            Para cargar datos de streams en S3, Redshift, ElasticSearch (ES) y Splunk. 
+            Por norma general, Data Streams interesa más.
+            No ser permite leer directamente de Firehouse, su objetico es escribir en almacenes como S3, RedShift, etc...
         - Kinesis Data Analytics. Permite analizar datos de streaming en tiempo real. Se utiliza para crear consultas SQL y sofisticadas aplicaciones Java
         Método del API para escribir registros, API PutRecords, hasta 500 en una sola llamada. Cada registro puede ser de hasta 1 MB, con un máximo de 5 MB para la petición completa.
         Cada fragmento soporta escrituras de hasta 1.000 registros por segundo con 1 MB de escritura como máximo.
@@ -460,6 +468,7 @@ Servicios AWS
         ChangeMessageVisibility configura el tiempo de espera de visibilidad para evitar que otros consumidores reciban y procesen el mismo mensaje.
         El tiempo de visibilidad de un mensaje por defecto es 30 sec, mínimo 0 sec y máximo 12 horas.
         El periodo de retención por defecto es de 4 días. Mínimo 60 sec, máximo 14 días.
+        Como máximo, se permiten recuperar 10 mensajes de una cola en una petición.
         - API
             DeleteQueue para borrar una cola y su contenido. 
             PurgeQueue purga el contenido de una cola.
@@ -503,6 +512,7 @@ Servicios AWS
         Si el propietario del bucket no es el del objeto, no se tiene acceso a los logs de acceso.
         Permite compartir objetos privados crean una URL prefirmada y será válida durante un tiempo concreto.
         kms:GenerateDataKey es un permiso necesario para que S3 cifre los objetos.
+        La clave de condición aws:SecureTransport comprueba si una petición ha sido enviada utilizando HTTP.
         Las acciones del ciclo de vida de S3 no se replican con la replicación de S3.
         Existe la replicación en la misma región o entre varias. Y permite configurarse a varios niveles.
         Permite emitir eventos a partir de acciones sobre un bucket (soporta como destinos, SNS, SQS no FIFO y Lambda).
