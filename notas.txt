@@ -7,9 +7,16 @@ Servicios AWS
         Construido con endpoints de API. Permite la configuración de CORS para limitar quien puede acceder a los recursos. 
         Permite estrangulación de peticiones, por defecto 10.000 por segundo. 
         No usa grupos de seguridad, usa política para ver que recursos pueden invocarla (por norma general, usuarios).
-        Existen varios tipos de integraciones, MOCK (respuesta preconfigurada), AWS_PROXY (para comunicar directamente el cliente y la function Lambda), HTTP_PROXY (Permite acceder directamente a los endpoints HTTP de un backend), HTTP (integración básica con un backend), AWS (expone servicios de AWS)
+        Existen varios tipos de integraciones:
+            - MOCK (respuesta preconfigurada)
+            - AWS_PROXY (para comunicar directamente el cliente y la function Lambda)
+            - HTTP (integración básica con un backend) Necesario configurar request y response.
+            - HTTP_PROXY (Permite acceder directamente a los endpoints HTTP de un backend) sin configurar request y response.
+            - AWS (expone servicios de AWS) Necesario configurar request y response.
+            - AWS_PROXY (expone servicios de AWS) Integración directa, sin request ni response a configurar.
         Permite crear API de Websocket.
         Existen varios tipos de API que podemos crear, WebSocket (comunicación bidireaccional), REST (se compone de recursos y métodos, rútas con una jerarquía), HTTP (permite crear API RESTful con menor latencia y menos coste que REST)
+        Un API de tipo REST tiene muchas más funcionalidades que un API HTTP, como por ejemplo estrangulación, planes de uso, caché.
         Una etapa es una referencia lógica a un estado del ciclo de vida de su API.
         Cada etapa permite configuración individual de caché, estrangulamiento, logs, variables o canary.
         Se debe de elegir en que etapa desplegar. Podemos elegir una etapa a la que atacar usando la varialble de etapa.
@@ -17,7 +24,7 @@ Servicios AWS
         Permite el uso de plantillas de mapeo.
         Se puede proporcionar almacenamiento en caché de respuestas y la compresión de la carga útil.
         No soporta STS como autenticación.
-        Exiten autorizadores del tipo COGNITO_USER_POOLS.
+        Exiten autorizadores del tipo COGNITO_USER_POOLS o LAMBDA.
         Podemos pasar una etapa a otra actualizando la variable de etapa o desplegando en el entorno siguiente.
         Para invocar una función Lambda desde el API, es necesario agregar el permiso a Lambda o un rol que asumir en API Gateway.
 
@@ -63,6 +70,7 @@ Servicios AWS
         Solo un origen se puede marcar como el principal para alta disponibilidad.
         Solo conmuta peticiones HTTP por error si son métodos GET, HEAD u OPTIONS.
         Podemos usar CloudFront Functions o Lambda@Edge para modificar la petición de forma programática (funciona como un Filter). Usa peticiones de espectador.
+        Para integrar Cognito User Pools necesitamos hacer uso de Lambda@Edge.
 
     - AWS CloudFormation
         - AWS Stacks Sets permite crear, actualizar y eliminar stacks en varias cuentas y regiones con una sola operación.  create-stack-set
@@ -76,8 +84,9 @@ Servicios AWS
         Parámetros Ref o pseudoparámetros dan información de AWS, AWS::AccountId, AWS::Region, AWS::StackName, AWS::NoValue (para setear null)
         Los valores de salida exportados en CloudFormation deben tener nombres únicos dentro de una única región.
         Se puede configurar los valores permitidos usando AllowedValues.
-        Export para exponer parámetros de salida.
+        Usar el campo Export para exponer parámetros de salida de la sección Outputs.
         Importamos valores exportados de otro stack con FN::ImportValue
+        Fn::GetAtt devuelve el valor de un atributo de un recurso. Ejemplo, YML !GetAtt miELB.NombreDNS, JSON "Fn::GetAtt" : [ "myELB" , "DNSName" ] DNS del ELB 
         Podemos escribir inline el código de una function Lambda siempre que no tenga dependencias en una plantilla o referenciar un bucket S3 que contegna todo.
 
         CloudFormation soporta los siguientes tipos de parámetros:
@@ -94,7 +103,7 @@ Servicios AWS
             - List<AWS::EC2::Subnet::Id> – Una matriz de IDs de subred
             
     - AWS CloudTrail
-        Proporciona un historia de eventos de la cuenta de AWS (por ejemplo, accesos a SSM Parameter store).
+        Proporciona un historia de eventos de llamadas a la API de AWS. (por ejemplo, accesos a SSM Parameter store).
         Permite ver las llamadas que se realicen a SSM y KMS.
         No se puede usar para depurar y rastrear datos entre cuentas.
     
@@ -138,6 +147,7 @@ Servicios AWS
         Orden de los hooks - Stop, Download, BeforeIns, Install, AfterIns, AppStart, Validate, BeforeBlockTraffic, BlockTraffic, AfterBlockTr, BeforeAllowT, AllowT, AfterAllowT
         El agente de CodeDeploy archiva las revisiones y los logs de las instancias (permite configurar cuantas almacenar).
         CodeDeploy Rolling back para revertir un despliegue fallido.
+        Permite configurar grupos de despliegue (varios por aplicación si se quiere) que representan las máquinas donde se desplegará la aplicación y a parte, configurar rollbacks, activadores y alarmas.
 
     - AWS CodePipeline
         Automatiza las fases de compilación, test y despliegue del proceso de publicación cada vez que se produce un cambio en el código.
@@ -184,6 +194,7 @@ Servicios AWS
         Una unidad de capacidad de lectura equivale a una lectura consistente por segundo o bien a dos lecturas eventualmente consistente para elementos de hasta 4kb.
         Una unidad de capacidad de lectura representa dos lecturas eventualmente consistentes por segundo, para un elemento de hasta 4 KB de tamaño. Esto significa que para un elemento de 12 KB de tamaño, necesitamos 3 RCU (12 KB / 4 KB) para dos lecturas consistentes por segundo. Como necesitamos 16 lecturas eventualmente consistentes por segundo, necesitamos 3 * (16 / 2) = 24 RCU.
         Tamaño de los elementos para lectura 4kb, para escritura 1kb.
+        Para escritura de 6 elementos con un tamaño de 4.5kb, necesitaremos 5 escrituras de 1kb (cubrir los 4.5) y multiplicar esto por cada elemento, 6*5 = 30 WCU.
         Una partición "caliente" puede recibir un mayor volumen de tráfico de lectura y escritura en comparación con otras particiones.
         La ubicación (partición) de cada elemento viene determinada por el valor hash de su clave de partición.
         Para la operación Scan podemos usar Escaneado en paralelo ya que las tablas con Scan se procesan de forma secuencial en incrementos de 1 MB.
@@ -211,6 +222,7 @@ Servicios AWS
     - AWS ECR (Elastic Container Registry)
         Para implementar una imagen de contenedor en Lambda, la imagen de contenedor debe implementar la API de tiempo de ejecución de Lambda.
         Debe crear la función Lambda desde la misma cuenta que el registro de contenedores en Amazon ECR.
+        $(aws ecr get-login --no-include-email) para hacer login.
 
     - AWS ECS
         Configuración de propiedades del Cluster mediante el fichero /etc/ecs/ecs.config, sobre todo si queremos registrar un cluster con un nombre diferencia al ya existente.
@@ -445,6 +457,8 @@ Servicios AWS
         Existe el sondeo corto y largo. Con el corto no se espera a enviar un mensaje, con el largo si o hasta que pase 20 segundos como máximo. Más económico.
         MessageDeduplicationId para asegurarse de que no se envíen mensajes duplicados a SQS.
         MessageGroupId permite procesar los mensajes en un orden concreto.
+        ChangeMessageVisibility configura el tiempo de espera de visibilidad para evitar que otros consumidores reciban y procesen el mismo mensaje.
+        El tiempo de visibilidad de un mensaje por defecto es 30 sec, mínimo 0 sec y máximo 12 horas.
         El periodo de retención por defecto es de 4 días. Mínimo 60 sec, máximo 14 días.
         - API
             DeleteQueue para borrar una cola y su contenido. 
@@ -466,6 +480,9 @@ Servicios AWS
         Succeed para terminar una ejecución de forma correcta. Fail termina la ejecución como fallida a no ser que usemos un Catch para el error.
         Una activity puede ser parte de una máquina de estados.
         Express workers para trabajos cortos y mucha carga. Duración máxima de 5 minutos, el standard 1 año. Express no soporta activities, .sync y callback.
+    
+    - AWS Security Token Service (STS)
+        Se puede deshabilitar para algunas regiones.
 
     - AWS Systems Manager
         Proporciona visibilidad y control de su infrastuctura en AWS.
@@ -491,6 +508,7 @@ Servicios AWS
         Permite emitir eventos a partir de acciones sobre un bucket (soporta como destinos, SNS, SQS no FIFO y Lambda).
         Ofrecen una consistencia de lectura fuerte.
         Si se elimina un bucket y se listan todos inmediatamente después, podría seguir apareciendo en el listado de buckets el eliminado.
+        Si se realizan dos escrituras en un único objeto no versionado al mismo tiempo, es posible que solo se envíe una notificación de evento. Para enviar si o si la notificación, es necesario versionar el objeto.
         Los clientes pueden utilizar cuatro mecanismos para controlar el acceso a los recursos de Amazon S3: 
             Las políticas de Identity and Access Management (IAM) 
             Las políticas de bucket 
