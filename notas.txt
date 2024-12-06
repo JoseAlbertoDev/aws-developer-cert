@@ -9,17 +9,18 @@ Servicios AWS
         No usa grupos de seguridad, usa política para ver que recursos pueden invocarla (por norma general, usuarios).
         Existen varios tipos de integraciones:
             - MOCK (respuesta preconfigurada)
-            - AWS_PROXY (para comunicar directamente el cliente y la function Lambda)
             - HTTP (integración básica con un backend) Necesario configurar request y response.
             - HTTP_PROXY (Permite acceder directamente a los endpoints HTTP de un backend) sin configurar request y response.
             - AWS (expone servicios de AWS) Necesario configurar request y response.
             - AWS_PROXY (expone servicios de AWS) Integración directa, sin request ni response a configurar.
-        Permite crear API de Websocket.
-        Existen varios tipos de API que podemos crear, WebSocket (comunicación bidireaccional), REST (se compone de recursos y métodos, rútas con una jerarquía), HTTP (permite crear API RESTful con menor latencia y menos coste que REST)
+        Existen varios tipos de API que podemos crear: 
+            -WebSocket (comunicación bidireaccional)
+            - REST (se compone de recursos y métodos, rútas con una jerarquía)
+            - HTTP (permite crear API RESTful con menos funcionalidades que una de tipo AWS REST)
         Un API de tipo REST tiene muchas más funcionalidades que un API HTTP, como por ejemplo estrangulación, planes de uso, caché.
         Una etapa es una referencia lógica a un estado del ciclo de vida de su API.
         Cada etapa permite configuración individual de caché, estrangulamiento, logs, variables o canary.
-        Se debe de elegir en que etapa desplegar. Podemos elegir una etapa a la que atacar usando la varialble de etapa.
+        Se debe de elegir en que etapa desplegar. Podemos elegir una etapa a la que atacar usando la variable de etapa.
         Permite configurar planes de uso para monetizar un API.
         Permite el uso de plantillas de mapeo.
         Se puede proporcionar almacenamiento en caché de respuestas y la compresión de la carga útil.
@@ -29,7 +30,7 @@ Servicios AWS
         Para invocar una función Lambda desde el API, es necesario agregar el permiso a Lambda o un rol que asumir en API Gateway.
 
     - AWS Athena
-        Es un servicio de consulta que facilita el análisis de datos en Amzaon S3 mediante SQL estándar.
+        Es un servicio de consulta que facilita el análisis de datos en Amzaon S3 mediante SQL estándar (csv's...).
         
     - AWS AppSync. 
         Creación de API con GraphQL y varias fuentes de datos como bases de datos, microservicios u otras apis(Tiempo real)
@@ -44,12 +45,21 @@ Servicios AWS
         Formar parte de una AWS Organizations no es obligatorio para utilizar AWS Budgets.
 
     - AWS Certificate Manager (ACM)
-        Herramientra prefereida para aprovisionar, administrar e implementar certificados de servidor. Gratuitos y con renovación automática.
+        Herramientra preferida para aprovisionar, administrar e implementar certificados de servidor. Gratuitos y con renovación automática.
             
     - AWS CDK (Cloud Development Kit)
-        Despliegue de infra por código. Usa plantillas proporcionadas por el CDK. El crear la aplicación es opcional. Genera un stack y luego lo implementamos con nuestra cuenta.
-        Cada aplicación debe de estar en su directorio y si tiene dependencias, incluirlas. Con cdk init inicializamos la app usando una plantilla y el lenguaje de programación.
-        Al sintetizar el código, generamos una plantilla de CloudFormation. Con cdk deploy implementamos la plantilla que hemos generado de CloudFormation.
+        Despliegue de infra por código. 
+        Usa plantillas proporcionadas por el CDK. 
+        El crear la aplicación es opcional. 
+        Genera un stack y luego lo implementamos con nuestra cuenta.
+        Cada aplicación debe de estar en su directorio y si tiene dependencias, incluirlas. 
+        Con cdk init inicializamos la app usando una plantilla y el lenguaje de programación.
+        Con cdk bootstrap preparamos el entorno de AWS (crea bucket S3, un repo de ECR y roles IAM)
+        Con cdk synth generamos la plantilla de CloudFormation con los recursos.
+        Con cdk deploy implementamos la plantilla que hemos generado de CloudFormation.
+        Con cdk destroy borramos la aplicación en AWS.
+        El orden sería, init, bootstrap, desarrollo, synth y deploy
+        Al sintetizar el código, generamos una plantilla de CloudFormation. 
         Permite usar CONSTRUCTORS, que son partes de infrastructura predefinida por AWS con valores por defecto.
      
     - AWS CLI
@@ -61,7 +71,7 @@ Servicios AWS
         Servir contenido estático y dinámico con varios orígenes (como S3). 
         Usa Edge Locations para acercar el contenido. 
         Permite configuración HTTPs entre el cliente y CloudFront y entre este y el backend (origen personalizado).
-        Las URLs firmadas usan una clave privada para firmar y la pública para verificar.
+        Las URLs firmadas usan una clave privada para firmar parte de la URL y la pública para verificar.
         Como root, solo se pueden tener hasta dos pares de claves de CloudFront por cuenta AWS y solo se pueden crear con la cuenta root.
         Permite el cifrado a nivel de campo (formulario HTTPs).
         No existen planes de uso de CloudFront
@@ -70,24 +80,26 @@ Servicios AWS
         Solo un origen se puede marcar como el principal para alta disponibilidad.
         Solo conmuta peticiones HTTP por error si son métodos GET, HEAD u OPTIONS.
         Podemos usar CloudFront Functions o Lambda@Edge para modificar la petición de forma programática (funciona como un Filter). Usa peticiones de espectador.
+        Las peticiones reciben dos nombres, viewer y de origin, la de viewer o espectador es cuando no se va al origen, la de origen es cuando ClodFront no tiene lo solicitado y a de ir al origen a consultarlo.
         Para integrar Cognito User Pools necesitamos hacer uso de Lambda@Edge.
 
     - AWS CloudFormation
         - AWS Stacks Sets permite crear, actualizar y eliminar stacks en varias cuentas y regiones con una sola operación.  create-stack-set
-        Infrastructura como código. Permite definir Conditions que luego se usarán como condicionales para crear un recurso o no, no se puede asociar con Parameters, estos luegos se evaluarán usando Coditions.
+        Infrastructura como código. 
+        Permite definir Conditions que luego se usarán como condicionales para crear un recurso o no, no se puede asociar con Parameters, estos luegos se evaluarán usando Coditions.
         Existen varias secciones, Resources, Conditions, Outputs (para referenciar en otros stacks), Parameters
         Los recursos se deben de eliminar en el orden inverso de creación si tienen dependencias.
-        Exista la función Drift Detection que permite detectar si la configruación de un stack difiera de la esperada (cambios manuales en los recursos sin registrar en la plantilla).
+        Existe la función Drift Detection que permite detectar si la configruación de un stack difiere de la esperada (cambios manuales en los recursos sin registrar en la plantilla).
         Change Sets permite revisar que cambios se van a aplicar en un entorno administrado con CloudFormation.
         La sección Transform: 'AWS::Serverless-2016-10-31' indica que se trata de una plantilla de modelo de aplicación sin servidor (SAM).
         Las funciones intrínsecas suelen empezar por Fn:: o !. Ejemplo: !Sub o Fn::Sub.
         Parámetros Ref o pseudoparámetros dan información de AWS, AWS::AccountId, AWS::Region, AWS::StackName, AWS::NoValue (para setear null)
         Los valores de salida exportados en CloudFormation deben tener nombres únicos dentro de una única región.
-        Se puede configurar los valores permitidos usando AllowedValues.
         Usar el campo Export para exponer parámetros de salida de la sección Outputs.
         Importamos valores exportados de otro stack con FN::ImportValue
+        Se puede configurar los valores permitidos usando AllowedValues.
         Fn::GetAtt devuelve el valor de un atributo de un recurso. Ejemplo, YML !GetAtt miELB.NombreDNS, JSON "Fn::GetAtt" : [ "myELB" , "DNSName" ] DNS del ELB 
-        Podemos escribir inline el código de una function Lambda siempre que no tenga dependencias en una plantilla o referenciar un bucket S3 que contegna todo.
+        Podemos escribir inline el código de una function Lambda siempre que no tenga dependencias en una plantilla o referenciar un bucket S3 que contenga todo.
 
         CloudFormation soporta los siguientes tipos de parámetros:
             - String – Una cadena literal
@@ -108,7 +120,7 @@ Servicios AWS
         No se puede usar para depurar y rastrear datos entre cuentas.
     
     - AWS CloudWatch
-        - AWS CloudWatch Logs Insights. Permite buscar y analizar logs en CloudWatch Logs.
+        - AWS CloudWatch Logs Insights. Permite buscar y analizar logs en CloudWatch Logs usando consultas parecidas a SQL.
         - AWS CloudWatch Events. Es Amazon EventBridge
         Permite la ingesta de métricas personalizadas. Cada métrica puede ser de Resolución estandar (granularidad de un minuto) o de Alta resolución (granularidad de un segundo). Los servicios de AWS usan la estandar por defecto.
         Las de alta resolución se pueden leer y recuperar cada 1, 5, 10, 30 segundos o en múltiplos de 60 segundos. 
@@ -118,11 +130,14 @@ Servicios AWS
         Permite integración con S3, entre otros servicios.
         Para cifrar un grupo de logs setearemos associate-kms-key a un ARN de clave de KMS.
         Existe el agente de CloudWatch que permite enviar logs de los servidores locales.
+        Se organiza en Namespaces que contienen métricas, y estas contienen dimensions (atributos) par clave valor y el valor de estas contienen data points que son las lecturas en el tiempo.
+        Cada métrica tiene asociada un retención que varía en función de su periodo.
+        Para alta resolución (periodo menos de 60sec) su retención es de 3 horas.
+        Luego se reparten según el periodo (1min:15dias, 5min:63dias, 1hora:455dias/15meses)
         
     - AWS CodeBuild
         Es un servicio de integración continua totalmente administrado que compila código fuente, ejecuta pruebas y produce paquetes de software listos para implementarse. 
         Escala de forma automática, gestionado por AWS.
-        Compilación usando el fichero buildspec.yml. 
         Para cifrar, indicamos que clave KMS usar (CODEBUILD_KMS_KEY_ID, clave CMKs, por defecto la de Amazon S3).
         Los elementos de la cola para compilación tienen un tiempo de vida de 8 horas por defecto, si no se ejectura, se eliminará.
         Permite almacenar las dependencias en caché (en S3).
