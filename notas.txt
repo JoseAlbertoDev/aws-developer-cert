@@ -78,6 +78,7 @@ Servicios AWS
         Permite la conmutación por error de origen (si falla uno, cambiar el tráfico a otro).
         Una petición siempre se envía al origen primario y solo va al secundario en caso de que falle.
         Solo un origen se puede marcar como el principal para alta disponibilidad.
+        Los grupos de orígenes son para alta disponibilidad, para enrutar peticiones, usar varios orígenes.
         Solo conmuta peticiones HTTP por error si son métodos GET, HEAD u OPTIONS.
         Podemos usar CloudFront Functions o Lambda@Edge para modificar la petición de forma programática (funciona como un Filter). Usa peticiones de espectador.
         Las peticiones reciben dos nombres, viewer y de origin, la de viewer o espectador es cuando no se va al origen, la de origen es cuando ClodFront no tiene lo solicitado y a de ir al origen a consultarlo.
@@ -403,6 +404,7 @@ Servicios AWS
         Existe la concurrencia reservada y provisionada. 
             La reservada indica el número máximo de instancias que se ejecutan de una función. 
             La provisionada tiene siempre lista N instancias para responder a las necesidades de carga.
+        Es posible programar una provisión de concurrencia en un periodo de tiempo concreto.
         Permite el uso de alias que apuntan a versiones desplegadas. Se puede dirigir un porcentaje de tráfico a un alias que trabaje con una versión concreta (alias ponderados).
         Un alias no puede apuntar a otro.
         Autorizador Lambda es una función de Lambda que permite controlar el acceso al API usando autenticación OAuth o SAML (token de portador).
